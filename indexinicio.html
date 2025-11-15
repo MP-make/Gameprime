@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio de Sesión - Game Prime</title>
+    <link rel="stylesheet" href="inicio.css">
+</head>
+<body>
+
+<nav> 
+    <ul class="nav-links">
+        <li><a href="indexinicio.html">Inicio</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+        <li><a href="carrito.html">Carrito</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="registro.html">Registro</a></li>
+        <li><a href="admi.html">Admin</a></li>
+    </ul>
+    <div class="hamburger" onclick="toggleMenu()">
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+    </div>
+</nav>
+
+<div class="modal" id="loginModal">
+    <h2>Inicia Sesión 🎮</h2>
+    <input type="text" id="username" placeholder="Usuario o Administrador">
+    <input type="password" id="password" placeholder="Contraseña">
+    <button onclick="login()">Entrar</button>
+</div>
+
+<div id="productos-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const supabaseUrl = 'https://qzxisawelwxjlffcbnvf.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6eGlzYXdlbHd4amxmZmNibnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3ODY2NDUsImV4cCI6MjA3NTM2MjY0NX0.ipa79U9oPZ1SmO5xsifgnryJJUw_8YpRuTKtiTQxXPs';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    async function loadProducts() {
+        const { data, error } = await supabase.from('productos').select('*').limit(8); // Limit to 8 for home page
+        if (error) {
+            console.error(error);
+            return;
+        }
+        const container = document.getElementById('productos-container');
+        container.innerHTML = '';
+        data.forEach(product => {
+            const productDiv = document.createElement('div');
+            productDiv.className = 'producto';
+            productDiv.innerHTML = `
+                <img src="imagenes/${product.portada}" alt="${product.titulo}">
+                <h3>${product.titulo}</h3>
+                <p>${product.descripcion_corta}</p>
+                <p>S/${product.precio}</p>
+                <button onclick="viewProduct(${product.id})">Ver Detalles</button>
+                <button onclick="addToCart(${product.id})">Agregar al Carrito</button>
+            `;
+            container.appendChild(productDiv);
+        });
+    }
+
+    function viewProduct(id) {
+        window.location.href = `producto.html?id=${id}`;
+    }
+
+    function addToCart(id) {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        cart.push(id);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        alert('Producto agregado al carrito');
+    }
+
+    window.onload = loadProducts;
+</script>
+<script src="login.js"></script>
+</body>
+</html>

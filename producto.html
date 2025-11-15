@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Producto - GamePrime</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="stylesP.css">
+    <script src="https://kit.fontawesome.com/f4c52f4663.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body onload="loadProduct()">
+    <header class="header"> 
+        <div class="logo">
+            <a href="indexinicio.html">
+                <img src="imagenes/logo.png" alt="logo" class="logo">
+            </a> 
+        </div>
+        <nav> 
+            <ul class="nav-links">
+                <li><a href="indexinicio.html">Inicio</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+                <li><a href="carrito.html">Carrito</a></li>
+            </ul>
+            <div class="hamburger" onclick="toggleMenu()">
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+            </div>
+        </nav>
+    </header>
+    <main class="fondo-1" id="product-main">
+        <!-- Product details will be loaded here -->
+    </main>
+    <footer class="pie-pagina">
+        <div class="grupo-1">
+            <div class="box">
+                <figure>
+                    <a href="#reclamaciones">
+                        <img src="imagenes/libro_de_reclamaciones.png" alt="libro de reclamaciones">
+                    </a>
+                </figure>
+            </div>
+            <div class="box">
+                <h2>SOBRE NOSOTROS</h2>
+                <p>Nuestra idea nace de la experiencia propia al comprar videojuegos, garantizando confianza porque hemos estado en tu lugar.</p>
+                <p>Fundada en 2024, nos comprometemos a ofrecer siempre las mejores ofertas.</p>
+            </div>
+            <div class="box">
+                <h2>SIGUENOS</h2>
+                <div class="red-social">
+                    <a href="https://www.facebook.com/?locale=es_LA" class="fa fa-facebook"></a>
+                    <a href="https://www.instagram.com/" class="fa fa-instagram"></a>
+                    <a href="https://x.com/?lang=es" class="fa fa-twitter"></a>
+                    <a href="https://www.youtube.com/" class="fa fa-youtube"></a>
+                </div>
+            </div>
+        </div>
+        <div class="grupo-2">
+            <small>&copy; 2024 <b>GAME PRIME</b> - Todos los Derechos Reservados.</small>
+        </div>
+    </footer>
+
+    <script>
+        const supabaseUrl = 'https://qzxisawelwxjlffcbnvf.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6eGlzYXdlbHd4amxmZmNibnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3ODY2NDUsImV4cCI6MjA3NTM2MjY0NX0.ipa79U9oPZ1SmO5xsifgnryJJUw_8YpRuTKtiTQxXPs';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        async function loadProduct() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (!id) {
+                document.getElementById('product-main').innerHTML = '<p>Producto no encontrado.</p>';
+                return;
+            }
+
+            const { data, error } = await supabase.from('productos').select('*').eq('id', id).single();
+            if (error || !data) {
+                document.getElementById('product-main').innerHTML = '<p>Error al cargar el producto.</p>';
+                return;
+            }
+
+            const product = data;
+            document.getElementById('product-main').innerHTML = `
+                <section class="product-details">
+                    <video controls>
+                        <source src="video/${product.video}" type="video/mp4">
+                    </video>
+                    <div class="related-images">
+                        <img src="imagenes/${product.imagen1}" alt="${product.titulo} 1">
+                        <img src="imagenes/${product.imagen2}" alt="${product.titulo} 2">
+                        <img src="imagenes/${product.imagen3}" alt="${product.titulo} 3">
+                        <img src="imagenes/${product.imagen4}" alt="${product.titulo} 4">
+                    </div>
+                    <div class="product-description">
+                        <table>
+                            <tr>
+                                <th>Descripción</th>
+                                <th>Contenido</th>
+                            </tr>
+                            <tr>
+                                <td>Producto</td>
+                                <td>${product.titulo}</td>
+                            </tr>
+                            <tr>
+                                <td>Categoría</td>
+                                <td>${product.categoria}</td>
+                            </tr>
+                            <tr>
+                                <td>Descripción</td>
+                                <td>${product.descripcion}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </section>
+                
+                <aside class="product-info">
+                    <img src="imagenes/${product.portada}" alt="Portada ${product.titulo}">
+                    <p>DESCRIPCIÓN DEL PRODUCTO:</p>
+                    <p>${product.descripcion_corta}</p>
+                    <p>FECHA DE LANZAMIENTO:</p>
+                    <p>${product.fecha_lanzamiento}</p>
+                    <p>PRECIO:</p>
+                    <p>S/${product.precio} PEN</p>
+                    <button onclick="addToCart(${product.id})">Comprar ${product.titulo}</button>
+                </aside>
+            `;
+        }
+
+        function addToCart(id) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.push(id);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert('Producto agregado al carrito');
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

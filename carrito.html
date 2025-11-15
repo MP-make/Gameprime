@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras - GamePrime</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body onload="loadCart()">
+    <header class="header">
+        <div class="logo">
+            <a href="indexinicio.html">
+                <img src="imagenes/logo.png" alt="Logo" class="logo-img">
+            </a>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="indexinicio.html">Inicio</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+                <li><a href="carrito.html">Carrito</a></li>
+            </ul>
+            <div class="hamburger" onclick="toggleMenu()">
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="carrito-container">
+        <h1>Carrito de Compras</h1>
+        <div id="cart-items"></div>
+        <div id="cart-total"></div>
+        <button id="checkout-btn" onclick="checkout()">Proceder al Pago</button>
+    </main>
+
+    <footer class="pie-pagina">
+        <div class="grupo-1">
+            <div class="box">
+                <figure>
+                    <a href="#reclamaciones">
+                        <img src="imagenes/libro_de_reclamaciones.png" alt="libro de reclamaciones">
+                    </a>
+                </figure>
+            </div>
+            <div class="box">
+                <h2>SOBRE NOSOTROS</h2>
+                <p>Nuestra idea nace de la experiencia propia al comprar videojuegos, garantizando confianza porque hemos estado en tu lugar.</p>
+                <p>Fundada en 2024, nos comprometemos a ofrecer siempre las mejores ofertas.</p>
+            </div>
+            <div class="box">
+                <h2>SIGUENOS</h2>
+                <div class="red-social">
+                    <a href="https://www.facebook.com/?locale=es_LA" class="fa fa-facebook"></a>
+                    <a href="https://www.instagram.com/" class="fa fa-instagram"></a>
+                    <a href="https://x.com/?lang=es" class="fa fa-twitter"></a>
+                    <a href="https://www.youtube.com/" class="fa fa-youtube"></a>
+                </div>
+            </div>
+        </div>
+        <div class="grupo-2">
+            <small>&copy; 2024 <b>GAME PRIME</b> - Todos los Derechos Reservados.</small>
+        </div>
+    </footer>
+
+    <script>
+        const supabaseUrl = 'https://qzxisawelwxjlffcbnvf.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6eGlzYXdlbHd4amxmZmNibnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3ODY2NDUsImV4cCI6MjA3NTM2MjY0NX0.ipa79U9oPZ1SmO5xsifgnryJJUw_8YpRuTKtiTQxXPs';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        async function loadCart() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (cart.length === 0) {
+                document.getElementById('cart-items').innerHTML = '<p>Tu carrito está vacío.</p>';
+                document.getElementById('cart-total').innerHTML = '';
+                document.getElementById('checkout-btn').style.display = 'none';
+                return;
+            }
+
+            const productIds = [...new Set(cart)]; // Unique IDs
+            const { data, error } = await supabase.from('productos').select('*').in('id', productIds);
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            const products = data;
+            let total = 0;
+            let itemsHtml = '';
+
+            cart.forEach(id => {
+                const product = products.find(p => p.id == id);
+                if (product) {
+                    total += product.precio;
+                    itemsHtml += `
+                        <div class="carrito-item">
+                            <img src="imagenes/${product.portada}" alt="${product.titulo}">
+                            <div class="item-details">
+                                <h3>${product.titulo}</h3>
+                                <p>Precio: S/${product.precio}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            document.getElementById('cart-items').innerHTML = itemsHtml;
+            document.getElementById('cart-total').innerHTML = `<h2>Total: S/${total}</h2>`;
+        }
+
+        function checkout() {
+            alert('Funcionalidad de pago no implementada aún. Usa MercadoPago o similar.');
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
