@@ -9,3 +9,8 @@ INSERT INTO productos (titulo, categoria, precio, fecha_lanzamiento, descripcion
 ('Juego 6', 'Carreras', 34.99, '2023-06-01', 'Descripción corta 6', 'Descripción completa 6', 'producto6.jpg', 'video6.mp4', 'imagen1.jpg', 'imagen2.jpg', 'imagen3.jpg', 'imagen4.jpg'),
 ('Juego 7', 'Puzzle', 19.99, '2023-07-01', 'Descripción corta 7', 'Descripción completa 7', 'producto7.jpg', 'video7.mp4', 'imagen1.jpg', 'imagen2.jpg', 'imagen3.jpg', 'imagen4.jpg'),
 ('Juego 8', 'Simulación', 54.99, '2023-08-01', 'Descripción corta 8', 'Descripción completa 8', 'producto8.jpg', 'video8.mp4', 'imagen1.jpg', 'imagen2.jpg', 'imagen3.jpg', 'imagen4.jpg');
+
+-- Sample data for usuarios table
+INSERT INTO usuarios (nombre, correo, rol) VALUES
+('Admin User', 'admin@gameprime.com', 'admin'),
+('Cliente User', 'cliente@gameprime.com', 'cliente');

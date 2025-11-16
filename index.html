@@ -50,47 +50,58 @@
                 <div class="producto-item" data-categoria="accion">
                     <img src="imagenes/producto1.jpg" alt="Producto 1">
                         <h3>The Last of Us</h3>
-                        <button onclick="window.location.href='P1.html'">Ver Más</button>
+                        <button onclick="showProductModal(1)">Ver Más</button>
                     </div>
                     <div class="producto-item" data-categoria="aventura">
                         <img src="imagenes/producto2.jpg" alt="Producto 2">
                         <h3>Red Dead Redemption</h3>
-                        <button onclick="window.location.href='P2.html'">Ver Más</button>
+                        <button onclick="showProductModal(2)">Ver Más</button>
                     </div>
                     <div class="producto-item" data-categoria="accion">
                         <img src="imagenes/producto3.jpg" alt="Producto 3">
                         <h3>God of War</h3>
-                        <button onclick="window.location.href='P3.html'">Ver Más</button>
+                        <button onclick="showProductModal(3)">Ver Más</button>
                     </div>
                     <div class="producto-item" data-categoria="aventura">
                         <img src="imagenes/producto4.jpg" alt="Producto 4">
                         <h3>Elden Ring</h3>
-                        <button onclick="window.location.href='P4.html'">Ver Más</button>
+                        <button onclick="showProductModal(4)">Ver Más</button>
                     </div>
                     <div class="producto-item" data-categoria="accion">
                         <img src="imagenes/producto5.jpg" alt="Producto 5">
                         <h3>GTA-5</h3>
-                        <button onclick="window.location.href='P5.html'">Ver Más</button>
+                        <button onclick="showProductModal(5)">Ver Más</button>
                     </div>
                     <div class="producto-item" data-categoria="accion">
                         <img src="imagenes/producto6.jpg" alt="Producto 6">
                         <h3>Marvel’s Spider-Man</h3>
-                        <button onclick="window.location.href='P6.html'">Ver Más</button>
+                        <button onclick="showProductModal(6)">Ver Más</button>
                     </div>
                     <div class="producto-item" data-categoria="deportes">
                         <img src="imagenes/producto7.jpg" alt="Producto 7">
                         <h3>FC 2024</h3>
-                        <button onclick="window.location.href='P7.html'">Ver Más</button>
+                        <button onclick="showProductModal(7)">Ver Más</button>
                     </div>
                     <div class="producto-item" data-categoria="rol">
                         <img src="imagenes/producto8.jpeg" alt="Producto 8">
                         <h3>Baldur's Gate III</h3>
-                        <button onclick="window.location.href='P8.html'">Ver Más</button>
+                        <button onclick="showProductModal(8)">Ver Más</button>
                     </div>
                 </div>
             </div>    
         </section>
     </main>
+
+    <!-- Modal for product details -->
+    <div id="productModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modal-body">
+                <!-- Product details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
     <footer class="pie-pagina">
         <div class="grupo-1">
             <div class="box">
@@ -119,7 +130,212 @@
             <small>&copy; 2024 <b>GAME PRIME</b> - Todos los Derechos Reservados.</small>
         </div>
     </footer>
+    <script src="script_sesion.js"></script>
+    <script src="script.js"></script>
+    <script>
+        const products = [
+            {
+                titulo: 'The Last of Us',
+                categoria: 'Acción',
+                precio: 59.99,
+                fecha_lanzamiento: '2023-01-01',
+                descripcion_corta: 'Descripción corta 1',
+                descripcion: 'Descripción completa 1',
+                portada: 'producto1.jpg',
+                video: 'The last of us.mp4',
+                imagen1: '1.jpeg',
+                imagen2: '2.jpeg',
+                imagen3: '3.jpeg',
+                imagen4: '4.jpeg',
+                fondo: 'fondo1-transformed.png'
+            },
+            {
+                titulo: 'Red Dead Redemption',
+                categoria: 'Aventura',
+                precio: 49.99,
+                fecha_lanzamiento: '2023-02-01',
+                descripcion_corta: 'Descripción corta 2',
+                descripcion: 'Descripción completa 2',
+                portada: 'producto2.jpg',
+                video: 'Red Dead Redemption 2.mp4',
+                imagen1: '5.jpeg',
+                imagen2: '6.jpeg',
+                imagen3: '7.jpeg',
+                imagen4: '8.jpeg',
+                fondo: 'fondo2.avif'
+            },
+            {
+                titulo: 'God of War',
+                categoria: 'Acción',
+                precio: 69.99,
+                fecha_lanzamiento: '2023-03-01',
+                descripcion_corta: 'Descripción corta 3',
+                descripcion: 'Descripción completa 3',
+                portada: 'producto3.jpg',
+                video: 'God of War Ragnarök.mp4',
+                imagen1: '9.jpeg',
+                imagen2: '10.jpeg',
+                imagen3: '11.jpeg',
+                imagen4: '12.jpeg',
+                fondo: 'fondo-4.jpg'
+            },
+            {
+                titulo: 'Elden Ring',
+                categoria: 'Aventura',
+                precio: 39.99,
+                fecha_lanzamiento: '2023-04-01',
+                descripcion_corta: 'Descripción corta 4',
+                descripcion: 'Descripción completa 4',
+                portada: 'producto4.jpg',
+                video: 'elden ring.mp4',
+                imagen1: '14.jpeg',
+                imagen2: '15.jpeg',
+                imagen3: '16.jpeg',
+                imagen4: '17.jpeg',
+                fondo: 'fondo_ofert.png'
+            },
+            {
+                titulo: 'GTA-5',
+                categoria: 'Acción',
+                precio: 29.99,
+                fecha_lanzamiento: '2023-05-01',
+                descripcion_corta: 'Descripción corta 5',
+                descripcion: 'Descripción completa 5',
+                portada: 'producto5.jpg',
+                video: 'Grand Theft Auto V.mp4',
+                imagen1: '18.jpeg',
+                imagen2: '19.jpeg',
+                imagen3: '20.jpeg',
+                imagen4: '21.jpeg',
+                fondo: 'fondo1.png'
+            },
+            {
+                titulo: 'Marvel’s Spider-Man',
+                categoria: 'Acción',
+                precio: 34.99,
+                fecha_lanzamiento: '2023-06-01',
+                descripcion_corta: 'Descripción corta 6',
+                descripcion: 'Descripción completa 6',
+                portada: 'producto6.jpg',
+                video: 'Marvel’s Spider-Man.mp4',
+                imagen1: '22.jpeg',
+                imagen2: '24.jpeg',
+                imagen3: '25.jpeg',
+                imagen4: '26.jpeg',
+                fondo: 'fondo_contact.png'
+            },
+            {
+                titulo: 'FC 2024',
+                categoria: 'Deportes',
+                precio: 19.99,
+                fecha_lanzamiento: '2023-07-01',
+                descripcion_corta: 'Descripción corta 7',
+                descripcion: 'Descripción completa 7',
+                portada: 'producto7.jpg',
+                video: 'EA SPORTS FC™ 24.mp4',
+                imagen1: '28.jpeg',
+                imagen2: '29.jpeg',
+                imagen3: '4.jpeg',
+                imagen4: '41.jpeg',
+                fondo: 'fondo libro de reclamaciones.jpg'
+            },
+            {
+                titulo: 'Baldur\'s Gate III',
+                categoria: 'Rol',
+                precio: 54.99,
+                fecha_lanzamiento: '2023-08-01',
+                descripcion_corta: 'Descripción corta 8',
+                descripcion: 'Descripción completa 8',
+                portada: 'producto8.jpeg',
+                video: 'Baldur\'s Gate 3.mp4',
+                imagen1: '42.jpeg',
+                imagen2: '44.jpeg',
+                imagen3: '45.jpeg',
+                imagen4: '46.jpeg',
+                fondo: 'libro fondo1.jpg'
+            }
+        ];
+
+        function showProductModal(id) {
+            const product = products[id - 1];
+            if (!product) return;
+
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = `
+                <div style="display:flex; gap:20px; align-items:center; justify-content:space-around;">
+                    <div style="flex:1; text-align:center;">
+                        <video controls style="width:100%; max-width:900px;">
+                            <source src="video/${product.video}" type="video/mp4">
+                        </video>
+                    </div>
+                    <div style="flex:1; text-align:left;">
+                        <p><strong>DESCRIPCIÓN DEL PRODUCTO:</strong></p>
+                        <p>${product.descripcion_corta}</p>
+                        <p><strong>FECHA DE LANZAMIENTO:</strong></p>
+                        <p>${product.fecha_lanzamiento}</p>
+                        <p><strong>PRECIO:</strong></p>
+                        <p>S/${product.precio} PEN</p>
+                        <button onclick="addToCart(${id})" style="margin-top:10px; padding:10px 20px; background-color:#ff007f; color:white; border:none; border-radius:5px; cursor:pointer;">Comprar ${product.titulo}</button>
+                    </div>
+                    <div style="flex:1; text-align:center;">
+                        <img src="imagenes/${product.portada}" alt="Portada ${product.titulo}" style="width:200px; height:auto; border-radius:10px;">
+                    </div>
+                </div>
+                <div class="related-images" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; justify-content:center;">
+                    <img src="imagenes/${product.imagen1}" alt="${product.titulo} 1" style="width:100px; height:100px; object-fit:cover;">
+                    <img src="imagenes/${product.imagen2}" alt="${product.titulo} 2" style="width:100px; height:100px; object-fit:cover;">
+                    <img src="imagenes/${product.imagen3}" alt="${product.titulo} 3" style="width:100px; height:100px; object-fit:cover;">
+                    <img src="imagenes/${product.imagen4}" alt="${product.titulo} 4" style="width:100px; height:100px; object-fit:cover;">
+                </div>
+                <div class="product-description" style="margin-top:20px;">
+                    <table style="width:100%; border-collapse:collapse; margin:0 auto;">
+                        <tr>
+                            <th style="border:1px solid #ddd; padding:8px;">Descripción</th>
+                            <th style="border:1px solid #ddd; padding:8px;">Contenido</th>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #ddd; padding:8px;">Producto</td>
+                            <td style="border:1px solid #ddd; padding:8px;">${product.titulo}</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #ddd; padding:8px;">Categoría</td>
+                            <td style="border:1px solid #ddd; padding:8px;">${product.categoria}</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #ddd; padding:8px;">Descripción</td>
+                            <td style="border:1px solid #ddd; padding:8px;">${product.descripcion}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+
+            const modalContent = document.querySelector('.modal-content');
+            modalContent.style.backgroundImage = `url('imagenes/${product.fondo}')`;
+            modalContent.style.backgroundSize = 'cover';
+            modalContent.style.backgroundPosition = 'center';
+            modalContent.style.backgroundRepeat = 'no-repeat';
+
+            document.getElementById('productModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('productModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('productModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function addToCart(id) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.push(id);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert('Producto agregado al carrito');
+        }
+    </script>
 </body>
 </html>
-<script src="script_sesion.js"></script>
-<script src="script.js"></script>

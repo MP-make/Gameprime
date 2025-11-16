@@ -49,3 +49,115 @@ body {
 .modal button:hover {
     background-color: #ff3399;
 }
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 1000px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: black;
+}
+
+nav {
+    background-color: #0a141d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 85px;
+    padding: 5px 10%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Nabla", system-ui;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    font-variation-settings:
+        "EDPT" 100,
+        "EHLT" 12;
+    font-size: 24px;
+}
+
+nav .nav-links {
+    list-style: none;
+}
+
+nav .nav-links li {
+    display: inline-block;
+    padding: 0 20px;
+}
+
+nav .nav-links li:hover {
+    transform: scale(1.1);
+}
+
+nav .nav-links a {
+    text-decoration: none;
+    color: #fff;
+}
+
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.hamburger .line {
+    width: 25px;
+    height: 3px;
+    background-color: #fff;
+    margin: 3px 0;
+}
+
+.nav-links {
+    display: flex;
+}
+
+.nav-links.active {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 85px;
+    left: 0;
+    right: 0;
+    background-color: #0a141d;
+    z-index: 1000;
+}
+
+.nav-links li {
+    padding: 15px;
+    text-align: center;
+}
+
+.nav-links li a {
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .hamburger {
+        display: flex;
+    }
+
+    .nav-links {
+        display: none; 
+    }
+
+    .nav-links.active {
+        display: flex; 
+    }
+}

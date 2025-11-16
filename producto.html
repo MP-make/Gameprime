@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="stylesP.css">
     <script src="https://kit.fontawesome.com/f4c52f4663.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body onload="loadProduct()">
     <header class="header"> 
@@ -62,10 +61,6 @@
     </footer>
 
     <script>
-        const supabaseUrl = 'https://qzxisawelwxjlffcbnvf.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6eGlzYXdlbHd4amxmZmNibnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3ODY2NDUsImV4cCI6MjA3NTM2MjY0NX0.ipa79U9oPZ1SmO5xsifgnryJJUw_8YpRuTKtiTQxXPs';
-        const supabase = createClient(supabaseUrl, supabaseKey);
-
         async function loadProduct() {
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
@@ -74,57 +69,61 @@
                 return;
             }
 
-            const { data, error } = await supabase.from('productos').select('*').eq('id', id).single();
-            if (error || !data) {
-                document.getElementById('product-main').innerHTML = '<p>Error al cargar el producto.</p>';
-                return;
-            }
+            try {
+                const response = await fetch(`/api/producto/${id}`);
+                if (!response.ok) {
+                    throw new Error('Error al cargar el producto');
+                }
+                const product = await response.json();
 
-            const product = data;
-            document.getElementById('product-main').innerHTML = `
-                <section class="product-details">
-                    <video controls>
-                        <source src="video/${product.video}" type="video/mp4">
-                    </video>
-                    <div class="related-images">
-                        <img src="imagenes/${product.imagen1}" alt="${product.titulo} 1">
-                        <img src="imagenes/${product.imagen2}" alt="${product.titulo} 2">
-                        <img src="imagenes/${product.imagen3}" alt="${product.titulo} 3">
-                        <img src="imagenes/${product.imagen4}" alt="${product.titulo} 4">
-                    </div>
-                    <div class="product-description">
-                        <table>
-                            <tr>
-                                <th>Descripción</th>
-                                <th>Contenido</th>
-                            </tr>
-                            <tr>
-                                <td>Producto</td>
-                                <td>${product.titulo}</td>
-                            </tr>
-                            <tr>
-                                <td>Categoría</td>
-                                <td>${product.categoria}</td>
-                            </tr>
-                            <tr>
-                                <td>Descripción</td>
-                                <td>${product.descripcion}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </section>
-                
-                <aside class="product-info">
-                    <img src="imagenes/${product.portada}" alt="Portada ${product.titulo}">
-                    <p>DESCRIPCIÓN DEL PRODUCTO:</p>
-                    <p>${product.descripcion_corta}</p>
-                    <p>FECHA DE LANZAMIENTO:</p>
-                    <p>${product.fecha_lanzamiento}</p>
-                    <p>PRECIO:</p>
-                    <p>S/${product.precio} PEN</p>
-                    <button onclick="addToCart(${product.id})">Comprar ${product.titulo}</button>
-                </aside>
-            `;
+                document.getElementById('product-main').innerHTML = `
+                    <section class="product-details">
+                        <video controls>
+                            <source src="video/${product.video}" type="video/mp4">
+                        </video>
+                        <div class="related-images">
+                            <img src="imagenes/${product.imagen1}" alt="${product.titulo} 1">
+                            <img src="imagenes/${product.imagen2}" alt="${product.titulo} 2">
+                            <img src="imagenes/${product.imagen3}" alt="${product.titulo} 3">
+                            <img src="imagenes/${product.imagen4}" alt="${product.titulo} 4">
+                        </div>
+                        <div class="product-description">
+                            <table>
+                                <tr>
+                                    <th>Descripción</th>
+                                    <th>Contenido</th>
+                                </tr>
+                                <tr>
+                                    <td>Producto</td>
+                                    <td>${product.titulo}</td>
+                                </tr>
+                                <tr>
+                                    <td>Categoría</td>
+                                    <td>${product.categoria}</td>
+                                </tr>
+                                <tr>
+                                    <td>Descripción</td>
+                                    <td>${product.descripcion}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </section>
+                    
+                    <aside class="product-info">
+                        <img src="imagenes/${product.portada}" alt="Portada ${product.titulo}">
+                        <p>DESCRIPCIÓN DEL PRODUCTO:</p>
+                        <p>${product.descripcion_corta}</p>
+                        <p>FECHA DE LANZAMIENTO:</p>
+                        <p>${product.fecha_lanzamiento}</p>
+                        <p>PRECIO:</p>
+                        <p>S/${product.precio} PEN</p>
+                        <button onclick="addToCart(${product.id})">Comprar ${product.titulo}</button>
+                    </aside>
+                `;
+            } catch (error) {
+                console.error(error);
+                document.getElementById('product-main').innerHTML = '<p>Error al cargar el producto.</p>';
+            }
         }
 
         function addToCart(id) {
@@ -137,3 +136,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+``` 

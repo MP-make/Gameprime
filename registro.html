@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro - GamePrime</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="inicio.css">
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -83,10 +83,6 @@
     </footer>
 
     <script>
-        const supabaseUrl = 'https://qzxisawelwxjlffcbnvf.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6eGlzYXdlbHd4amxmZmNibnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3ODY2NDUsImV4cCI6MjA3NTM2MjY0NX0.ipa79U9oPZ1SmO5xsifgnryJJUw_8YpRuTKtiTQxXPs';
-        const supabase = createClient(supabaseUrl, supabaseKey);
-
         document.getElementById('registro-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const nombre = document.getElementById('nombre').value;
@@ -99,21 +95,26 @@
                 return;
             }
 
-            const { data, error } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-                options: {
-                    data: {
-                        nombre: nombre,
-                        rol: 'cliente'
-                    }
-                }
-            });
+            try {
+                const response = await fetch('/api/registro', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
 
-            if (error) {
-                document.getElementById('error-message').textContent = 'Error al registrar: ' + error.message;
-            } else {
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    document.getElementById('error-message').textContent = 'Error al registrar: ' + errorData.error;
+                    return;
+                }
+
+                const data = await response.json();
                 document.getElementById('success-message').textContent = 'Registro exitoso. Revisa tu email para confirmar.';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('error-message').textContent = 'Error al registrar';
             }
         });
     </script>
