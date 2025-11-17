@@ -929,32 +929,41 @@ Descripción: ${p.descripcion}
   // === CATEGORÍAS ===
   function loadCategorias(mainContent) {
     mainContent.innerHTML = `
-      <h2>Gestión de Categorías</h2>
-      <div class="section">
-        <h3>Agregar Categoría</h3>
-        <form id="formCategoria" enctype="multipart/form-data">
-          <input type="text" id="nombreCategoria" placeholder="Nombre de la categoría (ej. Acción)" required>
-          <input type="file" id="fondoCategoria" accept="image/*" required>
-          <textarea id="descripcionCategoria" placeholder="Descripción (opcional)" rows="3" style="width: 100%; resize: vertical;"></textarea>
-          <button type="submit">Agregar Categoría</button>
-        </form>
+    <h2>Gestión de Categorías</h2>
+    <div class="section">
+      <h3>Agregar Categoría</h3>
+      <form id="formCategoria" enctype="multipart/form-data">
+        <input type="text" id="nombreCategoria" placeholder="Nombre de la categoría (ej. Acción)" required>
+        <input type="file" id="fondoCategoria" accept="image/*" required>
+        <textarea id="descripcionCategoria" placeholder="Descripción (opcional)" rows="3" style="width: 100%; resize: vertical;"></textarea>
+        <button type="submit">Agregar Categoría</button>
+      </form>
+    </div>
+    <div class="section">
+      <h3>Lista de Categorías</h3>
+      <table id="tablaCategorias">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Fondo</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpoCategorias"></tbody>
+      </table>
+    </div>
+    <!-- Modal for editing category -->
+    <div id="editCategoriaModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeEditCategoriaModal()">&times;</span>
+        <div id="edit-categoria-modal-body">
+          <!-- Edit form will be loaded here -->
+        </div>
       </div>
-      <div class="section">
-        <h3>Lista de Categorías</h3>
-        <table id="tablaCategorias">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Fondo</th>
-              <th>Descripción</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="cuerpoCategorias"></tbody>
-        </table>
-      </div>
-    `;
+    </div>
+  `;
     document.getElementById("formCategoria").addEventListener("submit", agregarCategoria);
     cargarCategorias();
   }
@@ -1008,7 +1017,7 @@ Descripción: ${p.descripcion}
             <td>${c.fondo || 'N/A'}</td>
             <td>${c.descripcion || 'N/A'}</td>
             <td>
-              <button onclick="modificarCategoria(${c.id}, '${c.nombre}', '${c.descripcion || ''}')" class="modificar">Modificar</button>
+              <button onclick="editarCategoria(${c.id})" class="modificar">Modificar</button>
               <button onclick="eliminarCategoria(${c.id})" class="eliminar">Eliminar</button>
             </td>
           `;
@@ -1041,20 +1050,61 @@ Descripción: ${p.descripcion}
     }
   }
 
-  async function modificarCategoria(id, nombre, descripcion) {
-    const nuevoNombre = prompt("Nuevo nombre:", nombre);
-    const nuevaDescripcion = prompt("Nueva descripción:", descripcion);
+  async function editarCategoria(id) {
+    try {
+      const response = await fetch(`/api/categorias/${id}`);
+      if (!response.ok) throw new Error('Error al cargar categoría');
+      const c = await response.json();
 
-    if (!nuevoNombre) {
+      const modalBody = document.getElementById('edit-categoria-modal-body');
+      modalBody.innerHTML = `
+        <form id="editFormCategoria" enctype="multipart/form-data">
+          <div style="margin-bottom: 15px;">
+            <label>Nombre de la categoría *</label>
+            <input type="text" id="edit-nombreCategoria" value="${c.nombre}" required>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <label>Fondo (imagen)</label>
+            <input type="file" id="edit-fondoCategoria" accept="image/*">
+            ${c.fondo ? `<div style="margin-top: 5px;">Fondo actual: <img src="imagenes/${c.fondo}" alt="Fondo" style="max-width: 100px;"></div>` : ''}
+          </div>
+          <div style="margin-bottom: 15px;">
+            <label>Descripción (opcional)</label>
+            <textarea id="edit-descripcionCategoria" placeholder="Descripción (opcional)" rows="3" style="width: 100%; resize: vertical;">${c.descripcion || ''}</textarea>
+          </div>
+          <button type="button" onclick="guardarCategoria(${id})">Guardar Cambios</button>
+        </form>
+      `;
+
+      document.getElementById('editCategoriaModal').style.display = 'block';
+    } catch (error) {
+      alert("❌ Error al cargar categoría para editar: " + error.message);
+    }
+  }
+
+  function closeEditCategoriaModal() {
+    document.getElementById('editCategoriaModal').style.display = 'none';
+  }
+
+  async function guardarCategoria(id) {
+    const nombre = document.getElementById('edit-nombreCategoria').value.trim();
+    const descripcion = document.getElementById('edit-descripcionCategoria').value.trim();
+    const fondoFile = document.getElementById('edit-fondoCategoria').files[0];
+
+    if (!nombre) {
       alert("El nombre es obligatorio");
       return;
     }
 
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    formData.append('descripcion', descripcion);
+    if (fondoFile) formData.append('fondo', fondoFile);
+
     try {
       const response = await fetch(`/api/categorias/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: nuevoNombre, descripcion: nuevaDescripcion })
+        body: formData
       });
 
       if (!response.ok) {
@@ -1063,6 +1113,7 @@ Descripción: ${p.descripcion}
       }
 
       alert("✏️ Categoría actualizada.");
+      closeEditCategoriaModal();
       cargarCategorias();
       cargarCategoriasEnSelect(); // Actualizar el select de productos
     } catch (error) {
@@ -1071,7 +1122,9 @@ Descripción: ${p.descripcion}
   }
 
   window.eliminarCategoria = eliminarCategoria;
-  window.modificarCategoria = modificarCategoria;
+  window.editarCategoria = editarCategoria;
+  window.closeEditCategoriaModal = closeEditCategoriaModal;
+  window.guardarCategoria = guardarCategoria;
 
   // === REPORTES ===
   function loadReportes(mainContent) {

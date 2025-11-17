@@ -515,6 +515,30 @@ app.get('/api/categorias', async (req, res) => {
   }
 });
 
+// GET /api/categorias/:id - Obtener una categoría por ID
+app.get('/api/categorias/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { data, error } = await supabase
+      .from('categorias')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    if (!data) {
+      return res.status(404).json({ error: 'Categoría no encontrada' });
+    }
+
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // POST /api/categorias - Agregar una categoría
 app.post('/api/categorias', uploadCategoria.single('fondo'), async (req, res) => {
   const { nombre, descripcion } = req.body;
