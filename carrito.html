@@ -6,20 +6,27 @@
     <title>Carrito de Compras - GamePrime</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://kit.fontawesome.com/f4c52f4663.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
-<body onload="loadCart()">
+<body onload="inicializarCarrito()">
     <header class="header">
         <div class="logo">
-            <a href="indexinicio.html">
+            <a href="index.html">
                 <img src="imagenes/logo.png" alt="Logo" class="logo-img">
             </a>
         </div>
         <nav>
             <ul class="nav-links">
-                <li><a href="indexinicio.html">Inicio</a></li>
-                <li><a href="#contacto">Contacto</a></li>
-                <li><a href="carrito.html">Carrito</a></li>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="ofertas.html">Ofertas</a></li>
+                <li><a href="contactanos.html">Contacto</a></li>
+                <li><a href="carrito.html" class="active">Carrito</a></li>
+                <li><a href="login-registro.html" id="loginLink">Iniciar Sesión</a></li>
+                <li style="display:none;" id="userInfo">
+                    <span id="userName" style="color:#ff007f; font-weight:bold;"></span>
+                    <button onclick="cerrarSesion()" style="background:#ff007f; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; margin-left:10px;">Cerrar Sesión</button>
+                </li>
             </ul>
             <div class="hamburger" onclick="toggleMenu()">
                 <div class="line"></div>
@@ -29,18 +36,262 @@
         </nav>
     </header>
 
-    <main class="carrito-container">
-        <h1>Carrito de Compras</h1>
-        <div id="cart-items"></div>
-        <div id="cart-total"></div>
-        <button id="checkout-btn" onclick="checkout()">Proceder al Pago</button>
+    <main class="carrito-main">
+        <div class="carrito-container">
+            <h1><i class="fa fa-shopping-cart"></i> Mi Carrito de Compras</h1>
+            
+            <div class="carrito-content">
+                <!-- Lista de productos -->
+                <div class="carrito-items-container">
+                    <div id="cart-items">
+                        <!-- Los items se cargarán aquí dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Resumen del pedido -->
+                <div class="carrito-resumen">
+                    <h2>Resumen del Pedido</h2>
+                    <div class="resumen-detalles">
+                        <div class="resumen-linea">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">S/ 0.00</span>
+                        </div>
+                        <div class="resumen-linea">
+                            <span>Descuentos:</span>
+                            <span id="descuentos" class="descuento-total">-S/ 0.00</span>
+                        </div>
+                        <div class="resumen-linea total-linea">
+                            <span><strong>Total:</strong></span>
+                            <span id="total"><strong>S/ 0.00</strong></span>
+                        </div>
+                    </div>
+                    <button id="checkout-btn" class="btn-checkout" onclick="procederAlPago()">
+                        <i class="fa fa-credit-card"></i> Proceder al Pago
+                    </button>
+                    <a href="index.html" class="btn-seguir-comprando">
+                        <i class="fa fa-arrow-left"></i> Seguir Comprando
+                    </a>
+                </div>
+            </div>
+        </div>
     </main>
+
+    <!-- Modal de Pago Profesional -->
+    <div id="paymentModal" class="payment-modal">
+        <div class="payment-modal-overlay" onclick="cerrarModalPago()"></div>
+        <div class="payment-modal-container">
+            <button class="payment-close-btn" onclick="cerrarModalPago()">
+                <i class="fa fa-times"></i>
+            </button>
+            
+            <div class="payment-header">
+                <div class="payment-secure-badge">
+                    <i class="fa fa-lock"></i>
+                    <span>Pago seguro SSL 256-bit</span>
+                </div>
+                <h2><i class="fa fa-credit-card"></i> Finalizar Compra</h2>
+                <p class="payment-subtitle">Completa tus datos de pago de forma segura</p>
+            </div>
+
+            <div class="payment-body">
+                <!-- Resumen del pedido -->
+                <div class="payment-summary">
+                    <h3><i class="fa fa-shopping-bag"></i> Resumen del Pedido</h3>
+                    <div id="payment-items-list" class="payment-items-list">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                    <div class="payment-total-box">
+                        <div class="payment-total-line">
+                            <span>Subtotal:</span>
+                            <span id="payment-subtotal">S/ 0.00</span>
+                        </div>
+                        <div class="payment-total-line discount">
+                            <span>Descuentos:</span>
+                            <span id="payment-descuentos">-S/ 0.00</span>
+                        </div>
+                        <div class="payment-total-line final">
+                            <span>Total a Pagar:</span>
+                            <span id="payment-total">S/ 0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario de pago -->
+                <form id="paymentForm" class="payment-form" onsubmit="procesarPago(event)">
+                    <h3><i class="fa fa-user"></i> Información Personal</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fullName">
+                                <i class="fa fa-user"></i> Nombre Completo
+                            </label>
+                            <input type="text" id="fullName" required placeholder="Ej: Juan Pérez García" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">
+                                <i class="fa fa-envelope"></i> Correo Electrónico
+                            </label>
+                            <input type="email" id="email" required placeholder="ejemplo@correo.com" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-divider"></div>
+                    
+                    <h3><i class="fa fa-credit-card"></i> Método de Pago</h3>
+                    
+                    <div class="card-type-selector">
+                        <button type="button" class="card-type-btn active" data-type="visa" onclick="selectCardType('visa')">
+                            <i class="fa fa-cc-visa"></i> Visa
+                        </button>
+                        <button type="button" class="card-type-btn" data-type="mastercard" onclick="selectCardType('mastercard')">
+                            <i class="fa fa-cc-mastercard"></i> Mastercard
+                        </button>
+                        <button type="button" class="card-type-btn" data-type="yape" onclick="selectCardType('yape')">
+                            <i class="fa fa-mobile"></i> Yape
+                        </button>
+                    </div>
+
+                    <div id="card-fields">
+                        <div class="form-group">
+                            <label for="cardNumber">
+                                <i class="fa fa-credit-card"></i> Número de Tarjeta *
+                            </label>
+                            <input 
+                                type="text" 
+                                id="cardNumber" 
+                                required 
+                                placeholder="1234 5678 9012 3456"
+                                maxlength="19"
+                                oninput="formatCardNumber(this)"
+                            >
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cardName">
+                                    <i class="fa fa-user"></i> Nombre en la Tarjeta *
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="cardName" 
+                                    required 
+                                    placeholder="NOMBRE APELLIDO"
+                                    oninput="this.value = this.value.toUpperCase()"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="expiryDate">
+                                    <i class="fa fa-calendar"></i> Vencimiento *
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="expiryDate" 
+                                    required 
+                                    placeholder="MM/AA"
+                                    maxlength="5"
+                                    oninput="formatExpiryDate(this)"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv">
+                                    <i class="fa fa-lock"></i> CVV *
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="cvv" 
+                                    required 
+                                    placeholder="123"
+                                    maxlength="4"
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="yape-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="yapeNumber">
+                                <i class="fa fa-mobile"></i> Número de Celular Yape *
+                            </label>
+                            <input 
+                                type="text" 
+                                id="yapeNumber" 
+                                placeholder="999 888 777"
+                                maxlength="11"
+                                oninput="formatYapeNumber(this)"
+                            >
+                        </div>
+                        <div class="yape-qr-info">
+                            <img src="imagenes/yape.jpg" alt="Yape" style="width: 100px; height: auto; margin-bottom: 10px;">
+                            <p style="color: #aaa; font-size: 13px;">Escanea el código QR en la app Yape para completar el pago</p>
+                        </div>
+                    </div>
+
+                    <div class="payment-terms">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="acceptTerms" required>
+                            <span class="checkmark"></span>
+                            Acepto los <a href="#" onclick="event.preventDefault()">términos y condiciones</a> y la <a href="#" onclick="event.preventDefault()">política de privacidad</a>
+                        </label>
+                    </div>
+
+                    <div class="payment-actions">
+                        <button type="button" class="btn-cancel" onclick="cerrarModalPago()">
+                            <i class="fa fa-times"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn-pay" id="btnPay">
+                            <i class="fa fa-lock"></i> Pagar <span id="payAmount">S/ 0.00</span>
+                        </button>
+                    </div>
+
+                    <div class="payment-security-badges">
+                        <div class="security-badge">
+                            <i class="fa fa-shield"></i>
+                            <span>100% Seguro</span>
+                        </div>
+                        <div class="security-badge">
+                            <i class="fa fa-lock"></i>
+                            <span>SSL Encriptado</span>
+                        </div>
+                        <div class="security-badge">
+                            <i class="fa fa-check-circle"></i>
+                            <span>Verificado</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Compra -->
+    <div id="successModal" class="success-modal">
+        <div class="success-modal-content">
+            <div class="success-animation">
+                <div class="success-checkmark">
+                    <div class="check-icon">
+                        <span class="icon-line line-tip"></span>
+                        <span class="icon-line line-long"></span>
+                        <div class="icon-circle"></div>
+                        <div class="icon-fix"></div>
+                    </div>
+                </div>
+            </div>
+            <h2 class="success-title">¡Compra Exitosa! 🎉</h2>
+            <p class="success-message">Tu pedido ha sido procesado correctamente</p>
+            <div class="success-details" id="successDetails">
+                <!-- Se llenará dinámicamente -->
+            </div>
+            <button class="btn-success-continue" onclick="cerrarModalExito()">
+                <i class="fa fa-check"></i> Continuar Comprando
+            </button>
+        </div>
+    </div>
 
     <footer class="pie-pagina">
         <div class="grupo-1">
             <div class="box">
                 <figure>
-                    <a href="#reclamaciones">
+                    <a href="reclamaciones.html">
                         <img src="imagenes/libro_de_reclamaciones.png" alt="libro de reclamaciones">
                     </a>
                 </figure>
@@ -66,52 +317,505 @@
     </footer>
 
     <script>
-        const supabaseUrl = 'https://qzxisawelwxjlffcbnvf.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6eGlzYXdlbHd4amxmZmNibnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3ODY2NDUsImV4cCI6MjA3NTM2MjY0NX0.ipa79U9oPZ1SmO5xsifgnryJJUw_8YpRuTKtiTQxXPs';
-        const supabase = createClient(supabaseUrl, supabaseKey);
+        // Verificar sesión
+        function verificarSesion() {
+            const userEmail = localStorage.getItem('user_email');
+            const userNombre = localStorage.getItem('user_nombre');
+            const userRol = localStorage.getItem('user_rol');
 
-        async function loadCart() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            if (cart.length === 0) {
-                document.getElementById('cart-items').innerHTML = '<p>Tu carrito está vacío.</p>';
-                document.getElementById('cart-total').innerHTML = '';
-                document.getElementById('checkout-btn').style.display = 'none';
+            if (userEmail && userNombre) {
+                document.getElementById('loginLink').style.display = 'none';
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('userName').textContent = '¡Hola, ' + userNombre + '!';
+                return true;
+            } else {
+                document.getElementById('loginLink').style.display = 'block';
+                document.getElementById('userInfo').style.display = 'none';
+                return false;
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('supabase_session');
+            localStorage.removeItem('user_email');
+            localStorage.removeItem('user_rol');
+            localStorage.removeItem('user_nombre');
+            alert('Sesión cerrada correctamente');
+            window.location.href = 'login-registro.html';
+        }
+
+        // Estructura del carrito: [{id: number, cantidad: number}]
+        let carritoProductos = [];
+        let productosData = [];
+
+        async function inicializarCarrito() {
+            verificarSesion();
+            await cargarCarrito();
+        }
+
+        async function cargarCarrito() {
+            console.log('🔄 Cargando carrito...');
+            
+            // Obtener carrito del localStorage
+            const cartData = localStorage.getItem('cart');
+            console.log('📦 Datos del carrito:', cartData);
+            
+            let cartIds = cartData ? JSON.parse(cartData) : [];
+            console.log('🆔 IDs en el carrito:', cartIds);
+            
+            if (cartIds.length === 0) {
+                console.log('❌ Carrito vacío');
+                mostrarCarritoVacio();
                 return;
             }
 
-            const productIds = [...new Set(cart)]; // Unique IDs
-            const { data, error } = await supabase.from('productos').select('*').in('id', productIds);
-            if (error) {
-                console.error(error);
-                return;
+            // Convertir array de IDs a estructura con cantidades
+            carritoProductos = [];
+            cartIds.forEach(id => {
+                const existe = carritoProductos.find(item => item.id === id);
+                if (existe) {
+                    existe.cantidad++;
+                } else {
+                    carritoProductos.push({ id: id, cantidad: 1 });
+                }
+            });
+            
+            console.log('📊 Productos con cantidades:', carritoProductos);
+
+            // Obtener productos únicos
+            const productIds = [...new Set(cartIds)];
+            
+            try {
+                console.log('🌐 Consultando API...');
+                const response = await fetch('/api/productos');
+                if (!response.ok) throw new Error('Error al cargar productos');
+                
+                const allProducts = await response.json();
+                console.log('✅ Productos obtenidos:', allProducts.length);
+                
+                productosData = allProducts.filter(p => productIds.includes(p.id));
+                console.log('🎮 Productos filtrados:', productosData);
+                
+                if (productosData.length === 0) {
+                    console.error('⚠️ No se encontraron productos con esos IDs');
+                    mostrarCarritoVacio();
+                    return;
+                }
+                
+                renderizarCarrito();
+            } catch (error) {
+                console.error('❌ Error:', error);
+                document.getElementById('cart-items').innerHTML = '<p class="error-mensaje"><i class="fa fa-exclamation-triangle"></i> Error al cargar el carrito. Por favor, recarga la página.</p>';
             }
+        }
 
-            const products = data;
-            let total = 0;
-            let itemsHtml = '';
+        function mostrarCarritoVacio() {
+            document.getElementById('cart-items').innerHTML = `
+                <div class="carrito-vacio">
+                    <i class="fa fa-shopping-cart" style="font-size: 80px; color: #666; margin-bottom: 20px;"></i>
+                    <h2>Tu carrito está vacío</h2>
+                    <p>¡Agrega algunos juegos increíbles para comenzar!</p>
+                    <a href="index.html" class="btn-ir-tienda">
+                        <i class="fa fa-gamepad"></i> Ir a la Tienda
+                    </a>
+                </div>
+            `;
+            document.getElementById('subtotal').textContent = 'S/ 0.00';
+            document.getElementById('descuentos').textContent = '-S/ 0.00';
+            document.getElementById('total').textContent = 'S/ 0.00';
+            document.getElementById('checkout-btn').disabled = true;
+        }
 
-            cart.forEach(id => {
-                const product = products.find(p => p.id == id);
-                if (product) {
-                    total += product.precio;
-                    itemsHtml += `
-                        <div class="carrito-item">
-                            <img src="imagenes/${product.portada}" alt="${product.titulo}">
-                            <div class="item-details">
-                                <h3>${product.titulo}</h3>
-                                <p>Precio: S/${product.precio}</p>
+        function renderizarCarrito() {
+            let html = '';
+            let subtotal = 0;
+            let totalDescuentos = 0;
+
+            carritoProductos.forEach(item => {
+                const producto = productosData.find(p => p.id === item.id);
+                if (!producto) return;
+
+                const precioOriginal = parseFloat(producto.precio);
+                const descuento = parseFloat(producto.descuento) || 0;
+                const precioConDescuento = descuento > 0 ? (precioOriginal - (precioOriginal * descuento / 100)) : precioOriginal;
+                const subtotalItem = precioConDescuento * item.cantidad;
+                const descuentoItem = (precioOriginal - precioConDescuento) * item.cantidad;
+
+                subtotal += precioOriginal * item.cantidad;
+                totalDescuentos += descuentoItem;
+
+                html += `
+                    <div class="carrito-item" data-id="${producto.id}">
+                        <div class="item-imagen">
+                            <img src="imagenes/${producto.portada}" alt="${producto.titulo}">
+                            ${descuento > 0 ? `<span class="item-descuento-badge">-${descuento}%</span>` : ''}
+                        </div>
+                        <div class="item-info">
+                            <h3>${producto.titulo}</h3>
+                            <p class="item-categoria"><i class="fa fa-tag"></i> ${producto.categoria}</p>
+                            ${descuento > 0 ? `
+                                <div class="item-precios">
+                                    <span class="precio-tachado">S/ ${precioOriginal.toFixed(2)}</span>
+                                    <span class="precio-actual">S/ ${precioConDescuento.toFixed(2)}</span>
+                                </div>
+                            ` : `
+                                <p class="precio-actual">S/ ${precioOriginal.toFixed(2)}</p>
+                            `}
+                        </div>
+                        <div class="item-cantidad">
+                            <label>Cantidad:</label>
+                            <div class="cantidad-controls">
+                                <button onclick="cambiarCantidad(${producto.id}, -1)" class="btn-cantidad">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                                <span class="cantidad-numero">${item.cantidad}</span>
+                                <button onclick="cambiarCantidad(${producto.id}, 1)" class="btn-cantidad">
+                                    <i class="fa fa-plus"></i>
+                                </button>
                             </div>
                         </div>
-                    `;
+                        <div class="item-subtotal">
+                            <p>Subtotal:</p>
+                            <p class="subtotal-precio">S/ ${subtotalItem.toFixed(2)}</p>
+                        </div>
+                        <div class="item-eliminar">
+                            <button onclick="eliminarDelCarrito(${producto.id})" class="btn-eliminar" title="Eliminar producto">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('cart-items').innerHTML = html;
+            
+            const total = subtotal - totalDescuentos;
+            document.getElementById('subtotal').textContent = `S/ ${subtotal.toFixed(2)}`;
+            document.getElementById('descuentos').textContent = `-S/ ${totalDescuentos.toFixed(2)}`;
+            document.getElementById('total').innerHTML = `<strong>S/ ${total.toFixed(2)}</strong>`;
+            document.getElementById('checkout-btn').disabled = false;
+        }
+
+        function cambiarCantidad(productoId, cambio) {
+            const item = carritoProductos.find(i => i.id === productoId);
+            if (!item) return;
+
+            item.cantidad += cambio;
+
+            if (item.cantidad <= 0) {
+                eliminarDelCarrito(productoId);
+                return;
+
+            }
+
+            actualizarLocalStorage();
+            renderizarCarrito();
+        }
+
+        function eliminarDelCarrito(productoId) {
+            if (!confirm('¿Estás seguro de eliminar este producto del carrito?')) return;
+
+            carritoProductos = carritoProductos.filter(i => i.id !== productoId);
+            productosData = productosData.filter(p => p.id !== productoId);
+
+            actualizarLocalStorage();
+
+            if (carritoProductos.length === 0) {
+                mostrarCarritoVacio();
+            } else {
+                renderizarCarrito();
+            }
+        }
+
+        function actualizarLocalStorage() {
+            const cartIds = [];
+            carritoProductos.forEach(item => {
+                for (let i = 0; i < item.cantidad; i++) {
+                    cartIds.push(item.id);
+                }
+            });
+            localStorage.setItem('cart', JSON.stringify(cartIds));
+        }
+
+        function procederAlPago() {
+            // Verificar si hay sesión activa
+            const userEmail = localStorage.getItem('user_email');
+            const userNombre = localStorage.getItem('user_nombre');
+            const userRol = localStorage.getItem('user_rol');
+
+            if (!userEmail) {
+                alert('⚠️ Debes iniciar sesión como cliente para proceder al pago.\n\nSerás redirigido a la página de login.');
+                window.location.href = 'login-registro.html';
+                return;
+            }
+
+            if (userRol === 'admin') {
+                alert('⚠️ Los administradores no pueden realizar compras.\n\nPor favor, inicia sesión con una cuenta de cliente.');
+                return;
+            }
+
+            // Verificar que haya productos en el carrito
+            if (carritoProductos.length === 0) {
+                alert('Tu carrito está vacío');
+                return;
+            }
+
+            // Abrir modal de pago
+            abrirModalPago();
+        }
+
+        // ===== FUNCIONES DEL MODAL DE PAGO =====
+
+        function abrirModalPago() {
+            // Prellenar datos del usuario
+            const userEmail = localStorage.getItem('user_email');
+            const userNombre = localStorage.getItem('user_nombre');
+            
+            document.getElementById('email').value = userEmail || '';
+            document.getElementById('fullName').value = userNombre || '';
+
+            // Calcular totales
+            let subtotal = 0;
+            let totalDescuentos = 0;
+            let itemsHtml = '';
+
+            carritoProductos.forEach(item => {
+                const producto = productosData.find(p => p.id === item.id);
+                if (!producto) return;
+
+                const precioOriginal = parseFloat(producto.precio);
+                const descuento = parseFloat(producto.descuento) || 0;
+                const precioConDescuento = descuento > 0 ? (precioOriginal - (precioOriginal * descuento / 100)) : precioOriginal;
+                const subtotalItem = precioConDescuento * item.cantidad;
+                const descuentoItem = (precioOriginal - precioConDescuento) * item.cantidad;
+
+                subtotal += precioOriginal * item.cantidad;
+                totalDescuentos += descuentoItem;
+
+                itemsHtml += `
+                    <div class="payment-item">
+                        <img src="imagenes/${producto.portada}" alt="${producto.titulo}">
+                        <div class="payment-item-info">
+                            <h4>${producto.titulo}</h4>
+                            <p>Cantidad: ${item.cantidad}</p>
+                        </div>
+                        <div class="payment-item-price">S/ ${subtotalItem.toFixed(2)}</div>
+                    </div>
+                `;
+            });
+
+            const total = subtotal - totalDescuentos;
+
+            document.getElementById('payment-items-list').innerHTML = itemsHtml;
+            document.getElementById('payment-subtotal').textContent = `S/ ${subtotal.toFixed(2)}`;
+            document.getElementById('payment-descuentos').textContent = `-S/ ${totalDescuentos.toFixed(2)}`;
+            document.getElementById('payment-total').textContent = `S/ ${total.toFixed(2)}`;
+            document.getElementById('payAmount').textContent = `S/ ${total.toFixed(2)}`;
+
+            // Mostrar modal con animación
+            const modal = document.getElementById('paymentModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function cerrarModalPago() {
+            const modal = document.getElementById('paymentModal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
+            
+            // Resetear formulario
+            document.getElementById('paymentForm').reset();
+        }
+
+        let selectedCardType = 'visa';
+
+        function selectCardType(type) {
+            selectedCardType = type;
+            const buttons = document.querySelectorAll('.card-type-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.type === type) {
+                    btn.classList.add('active');
                 }
             });
 
-            document.getElementById('cart-items').innerHTML = itemsHtml;
-            document.getElementById('cart-total').innerHTML = `<h2>Total: S/${total}</h2>`;
+            // Mostrar u ocultar campos según el método de pago
+            if (type === 'yape') {
+                document.getElementById('card-fields').style.display = 'none';
+                document.getElementById('yape-fields').style.display = 'block';
+            } else {
+                document.getElementById('card-fields').style.display = 'block';
+                document.getElementById('yape-fields').style.display = 'none';
+            }
         }
 
-        function checkout() {
-            alert('Funcionalidad de pago no implementada aún. Usa MercadoPago o similar.');
+        function formatCardNumber(input) {
+            let value = input.value.replace(/\s/g, '');
+            value = value.replace(/[^0-9]/g, '');
+            
+            let formattedValue = '';
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formattedValue += ' ';
+                }
+                formattedValue += value[i];
+            }
+            
+            input.value = formattedValue;
+            
+            // Actualizar preview
+            const preview = document.getElementById('cardPreview').querySelector('.card-preview-number');
+            if (value.length > 0) {
+                preview.textContent = formattedValue.padEnd(19, '•');
+            } else {
+                preview.textContent = '•••• •••• •••• ••••';
+            }
+        }
+
+        function formatExpiryDate(input) {
+            let value = input.value.replace(/\D/g, '');
+            
+            if (value.length >= 2) {
+                value = value.slice(0, 2) + '/' + value.slice(2, 4);
+            }
+            
+            input.value = value;
+        }
+
+        function formatYapeNumber(input) {
+            let value = input.value.replace(/\D/g, '');
+            input.value = value;
+        }
+
+        function procesarPago(event) {
+            event.preventDefault();
+            
+            // Validar número de tarjeta (simulado - solo verifica longitud)
+            if (selectedCardType !== 'yape') {
+                const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+                if (cardNumber.length < 13 || cardNumber.length > 19) {
+                    alert('❌ Número de tarjeta inválido');
+                    return;
+                }
+
+                // Validar fecha de expiración
+                const expiryDate = document.getElementById('expiryDate').value;
+                const [month, year] = expiryDate.split('/');
+                if (!month || !year || parseInt(month) < 1 || parseInt(month) > 12) {
+                    alert('❌ Fecha de expiración inválida');
+                    return;
+                }
+
+                // Validar CVV
+                const cvv = document.getElementById('cvv').value;
+                if (cvv.length < 3 || cvv.length > 4) {
+                    alert('❌ CVV inválido');
+                    return;
+                }
+            } else {
+                // Validar número de Yape
+                const yapeNumber = document.getElementById('yapeNumber').value;
+                if (yapeNumber.length !== 9) {
+                    alert('❌ Número de celular Yape inválido');
+                    return;
+                }
+            }
+
+            // Mostrar animación de procesamiento
+            const btnPay = document.getElementById('btnPay');
+            const originalText = btnPay.innerHTML;
+            btnPay.disabled = true;
+            btnPay.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Procesando pago...';
+
+            // Simular procesamiento de pago
+            setTimeout(() => {
+                // Calcular total
+                let total = 0;
+                carritoProductos.forEach(item => {
+                    const producto = productosData.find(p => p.id === item.id);
+                    if (producto) {
+                        const precioOriginal = parseFloat(producto.precio);
+                        const descuento = parseFloat(producto.descuento) || 0;
+                        const precioConDescuento = descuento > 0 ? (precioOriginal - (precioOriginal * descuento / 100)) : precioOriginal;
+                        total += precioConDescuento * item.cantidad;
+                    }
+                });
+
+                // Preparar detalles del pedido
+                const orderNumber = 'GP-' + Date.now().toString().slice(-8);
+                const orderDate = new Date().toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                let productosHtml = '<ul class="success-products-list">';
+                carritoProductos.forEach(item => {
+                    const producto = productosData.find(p => p.id === item.id);
+                    if (producto) {
+                        productosHtml += `<li><i class="fa fa-gamepad"></i> ${producto.titulo} x${item.cantidad}</li>`;
+                    }
+                });
+                productosHtml += '</ul>';
+
+                const successDetails = `
+                    <div class="order-info">
+                        <div class="order-number">
+                            <i class="fa fa-hashtag"></i>
+                            <strong>Número de Orden:</strong> ${orderNumber}
+                        </div>
+                        <div class="order-date">
+                            <i class="fa fa-calendar"></i>
+                            <strong>Fecha:</strong> ${orderDate}
+                        </div>
+                        <div class="order-total">
+                            <i class="fa fa-money"></i>
+                            <strong>Total Pagado:</strong> <span class="total-amount">S/ ${total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <div class="order-products">
+                        <h4><i class="fa fa-shopping-bag"></i> Productos Comprados:</h4>
+                        ${productosHtml}
+                    </div>
+                    <div class="order-email-notice">
+                        <i class="fa fa-envelope"></i>
+                        Te hemos enviado un correo de confirmación a <strong>${document.getElementById('email').value}</strong>
+                    </div>
+                `;
+
+                document.getElementById('successDetails').innerHTML = successDetails;
+
+                // Cerrar modal de pago
+                cerrarModalPago();
+
+                // Limpiar carrito
+                localStorage.removeItem('cart');
+                carritoProductos = [];
+                productosData = [];
+
+                // Mostrar modal de éxito
+                setTimeout(() => {
+                    const successModal = document.getElementById('successModal');
+                    successModal.style.display = 'flex';
+                    setTimeout(() => successModal.classList.add('show'), 10);
+                }, 400);
+
+                // Restaurar botón
+                btnPay.disabled = false;
+                btnPay.innerHTML = originalText;
+            }, 2000);
+        }
+
+        function cerrarModalExito() {
+            const modal = document.getElementById('successModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                // Redirigir a inicio o recargar carrito vacío
+                window.location.href = 'index.html';
+            }, 300);
         }
     </script>
     <script src="script.js"></script>
