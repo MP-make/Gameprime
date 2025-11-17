@@ -264,17 +264,27 @@ app.get('/api/usuarios', async (req, res) => {
     let query = supabase.from('usuarios').select('*');
 
     if (req.query.correo) {
-      query = query.eq('correo', req.query.correo).single();
+      // Convertir a minúsculas para búsqueda insensible a mayúsculas
+      const emailLower = req.query.correo.toLowerCase();
+      
+      // Usar ilike para búsqueda case-insensitive
+      query = query.ilike('correo', emailLower).limit(1).maybeSingle();
     }
 
     const { data, error } = await query;
 
     if (error) {
+      console.error('❌ Error en GET /api/usuarios:', error);
       return res.status(500).json({ error: error.message });
+    }
+
+    if (req.query.correo && !data) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
     res.json(data);
   } catch (err) {
+    console.error('❌ Error interno:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -288,16 +298,33 @@ app.post('/api/usuarios', async (req, res) => {
   }
 
   try {
+    // Convertir el correo a minúsculas antes de guardar
+    const correoLower = correo.toLowerCase();
+    
+    // Verificar si ya existe
+    const { data: existing } = await supabase
+      .from('usuarios')
+      .select('correo')
+      .ilike('correo', correoLower)
+      .maybeSingle();
+    
+    if (existing) {
+      return res.status(409).json({ error: 'El usuario ya existe' });
+    }
+
     const { data, error } = await supabase
       .from('usuarios')
-      .insert([{ nombre, correo, rol }]);
+      .insert([{ nombre, correo: correoLower, rol }])
+      .select();
 
     if (error) {
+      console.error('❌ Error al insertar usuario:', error);
       return res.status(500).json({ error: error.message });
     }
 
-    res.json(data);
+    res.json(data[0]);
   } catch (err) {
+    console.error('❌ Error interno:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

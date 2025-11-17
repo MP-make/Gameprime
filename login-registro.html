@@ -195,12 +195,49 @@
             console.log('📧 Intentando registrar:', email);
 
             try {
-                // Registrar en Supabase Auth
+                // Primero verificar si el usuario ya existe en la BD
+                const checkResponse = await fetch(`/api/usuarios?correo=${encodeURIComponent(email)}`);
+                if (checkResponse.ok) {
+                    alert('⚠️ Este email ya está registrado. Por favor inicia sesión.');
+                    showTab('login');
+                    return;
+                }
+
+                // Extraer nombre del email (antes del @)
+                const nombre = email.split('@')[0];
+
+                // PRIMERO: Crear usuario en la tabla usuarios con rol 'cliente'
+                console.log('📝 Creando usuario en BD primero...');
+                const createUserResponse = await fetch('/api/usuarios', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        nombre: nombre, 
+                        correo: email, 
+                        rol: 'cliente'
+                    })
+                });
+
+                if (!createUserResponse.ok) {
+                    const errorData = await createUserResponse.json();
+                    console.error('❌ Error al crear usuario en BD:', errorData);
+                    alert('❌ Error al crear el usuario: ' + (errorData.error || 'Error desconocido'));
+                    return;
+                }
+
+                console.log('✅ Usuario creado en BD');
+
+                // SEGUNDO: Registrar en Supabase Auth
+                console.log('🔐 Registrando en Supabase Auth...');
                 const { data, error } = await supabase.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                        emailRedirectTo: window.location.origin
+                        emailRedirectTo: window.location.origin,
+                        data: {
+                            nombre: nombre,
+                            rol: 'cliente'
+                        }
                     }
                 });
 
@@ -215,40 +252,18 @@
                     } else if (error.message.includes('already registered')) {
                         alert('⚠️ Este email ya está registrado. Intenta iniciar sesión o usa otro email.');
                     } else {
-                        alert('❌ Error al registrar: ' + error.message);
+                        alert('❌ Error al registrar en autenticación: ' + error.message);
                     }
                     return;
                 }
 
-                console.log('✅ Usuario registrado en Auth:', email);
+                console.log('✅ Usuario registrado completamente');
+                alert('✅ ¡Registro exitoso!\n\n📧 Se ha enviado un email de confirmación a: ' + email + '\n\n✨ Ya puedes iniciar sesión mientras confirmas tu cuenta.');
+                
+                // Auto-completar el formulario de login
+                document.getElementById('loginEmail').value = email;
+                showTab('login');
 
-                // Extraer nombre del email (antes del @)
-                const nombre = email.split('@')[0];
-
-                // Agregar usuario a la tabla usuarios con rol 'cliente'
-                const response = await fetch('/api/usuarios', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        nombre: nombre, 
-                        correo: email, 
-                        rol: 'cliente'
-                    })
-                });
-
-                console.log('📡 Response status al crear usuario:', response.status);
-
-                if (response.ok) {
-                    const responseData = await response.json();
-                    console.log('✅ Usuario creado en BD:', responseData);
-                    alert('✅ Registro exitoso. Revisa tu email para confirmar tu cuenta y luego inicia sesión.');
-                    showTab('login');
-                } else {
-                    const errorData = await response.json();
-                    console.error('❌ Error al guardar en BD:', errorData);
-                    alert('⚠️ Usuario registrado en autenticación. Puedes iniciar sesión, pero hubo un problema al guardar en la base de datos:\n' + errorData.error);
-                    showTab('login');
-                }
             } catch (error) {
                 console.error('❌ Error en registro:', error);
                 alert('❌ Error de conexión: ' + error.message);

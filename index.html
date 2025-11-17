@@ -37,18 +37,70 @@
         <section class="banner">
             <img id="img_banner" src="imagenes/banner1.jpg" alt="Videojuegos destacados">
         </section>
-        <div class="filtro">
-        <h3>Filtrar por Categoría:</h3>
-            <div class="categoria">
-                <select id="categoria-juegos" name="categoria-juegos" onchange="filtrarJuegos()">
-                    <option value="">Todos los Juegos</option>
-                    <option value="accion">Acción</option>
-                    <option value="aventura">Aventura</option>
-                    <option value="rol">Rol</option>
-                    <option value="deportes">Deportes</option>
-                </select>
+        
+        <!-- Sistema de Filtros Avanzado -->
+        <div class="filtros-container">
+            <h3><i class="fa fa-filter"></i> Filtrar Juegos</h3>
+            <div class="filtros-grid">
+                <!-- Filtro por Categoría -->
+                <div class="filtro-item">
+                    <label for="categoria-juegos"><i class="fa fa-tag"></i> Categoría:</label>
+                    <select id="categoria-juegos" onchange="aplicarFiltros()">
+                        <option value="">Todas las Categorías</option>
+                    </select>
+                </div>
+
+                <!-- Filtro por Rango de Precio -->
+                <div class="filtro-item">
+                    <label for="precio-min"><i class="fa fa-money"></i> Precio:</label>
+                    <div class="precio-range">
+                        <input type="number" id="precio-min" placeholder="Mín" min="0" step="10" onchange="aplicarFiltros()">
+                        <span>-</span>
+                        <input type="number" id="precio-max" placeholder="Máx" min="0" step="10" onchange="aplicarFiltros()">
+                    </div>
+                </div>
+
+                <!-- Filtro por Descuento -->
+                <div class="filtro-item">
+                    <label for="descuento-min"><i class="fa fa-percent"></i> Descuento mínimo:</label>
+                    <select id="descuento-min" onchange="aplicarFiltros()">
+                        <option value="0">Todos</option>
+                        <option value="10">10% o más</option>
+                        <option value="20">20% o más</option>
+                        <option value="30">30% o más</option>
+                        <option value="50">50% o más</option>
+                    </select>
+                </div>
+
+                <!-- Filtro por Búsqueda de Texto -->
+                <div class="filtro-item">
+                    <label for="buscar-texto"><i class="fa fa-search"></i> Buscar:</label>
+                    <input type="text" id="buscar-texto" placeholder="Nombre del juego..." oninput="aplicarFiltros()">
+                </div>
+
+                <!-- Ordenar por -->
+                <div class="filtro-item">
+                    <label for="ordenar-por"><i class="fa fa-sort"></i> Ordenar por:</label>
+                    <select id="ordenar-por" onchange="aplicarFiltros()">
+                        <option value="">Predeterminado</option>
+                        <option value="precio-asc">Precio: Menor a Mayor</option>
+                        <option value="precio-desc">Precio: Mayor a Menor</option>
+                        <option value="descuento-desc">Mayor Descuento</option>
+                        <option value="nombre-asc">Nombre: A-Z</option>
+                        <option value="nombre-desc">Nombre: Z-A</option>
+                    </select>
+                </div>
+
+                <!-- Botón Limpiar Filtros -->
+                <div class="filtro-item">
+                    <button class="btn-limpiar-filtros" onclick="limpiarFiltros()">
+                        <i class="fa fa-refresh"></i> Limpiar Filtros
+                    </button>
+                </div>
             </div>
+            <div id="resultados-contador" class="resultados-contador"></div>
         </div>
+
         <section class="productos" id="juegos-lista">
             <div class="grid-layout">   
             </div>    
@@ -134,6 +186,42 @@
         verificarSesion();
 
         let products = [];
+        let categories = [];
+
+        // Cargar categorías desde la base de datos
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categorias');
+                if (response.ok) {
+                    categories = await response.json();
+                    const select = document.getElementById('categoria-juegos');
+                    select.innerHTML = '<option value="">Todos los Juegos</option>';
+                    categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.nombre.toLowerCase();
+                        option.textContent = cat.nombre;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        // Función de filtrado
+        function filtrarJuegos() {
+            const categoriaSeleccionada = document.getElementById('categoria-juegos').value;
+            const productoItems = document.querySelectorAll('.producto-item');
+            
+            productoItems.forEach(item => {
+                const categoriaProducto = item.getAttribute('data-categoria');
+                if (categoriaSeleccionada === '' || categoriaProducto === categoriaSeleccionada) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
 
         async function loadProducts() {
             try {
@@ -145,10 +233,26 @@
                     const div = document.createElement('div');
                     div.className = 'producto-item';
                     div.setAttribute('data-categoria', producto.categoria.toLowerCase());
+                    
+                    // Calcular precio con descuento
+                    const precioOriginal = parseFloat(producto.precio);
+                    const descuento = parseFloat(producto.descuento) || 0;
+                    const precioFinal = descuento > 0 ? (precioOriginal - (precioOriginal * descuento / 100)).toFixed(2) : precioOriginal.toFixed(2);
+                    
                     div.innerHTML = `
-                        <img src="imagenes/${producto.portada}" alt="${producto.titulo}">
-                        <h3>${producto.titulo}</h3>
-                        <button onclick="showProductModal(${producto.id})">Ver Más</button>
+                        <div class="producto-imagen">
+                            <img src="imagenes/${producto.portada}" alt="${producto.titulo}">
+                            ${descuento > 0 ? `<div class="descuento-badge">-${descuento}%</div>` : ''}
+                        </div>
+                        <div class="producto-info">
+                            <h3>${producto.titulo}</h3>
+                            <p class="producto-categoria">${producto.categoria}</p>
+                            <div class="producto-precio">
+                                ${descuento > 0 ? `<span class="precio-original">S/ ${precioOriginal.toFixed(2)}</span>` : ''}
+                                <span class="precio-final">S/ ${precioFinal}</span>
+                            </div>
+                            <button onclick="showProductModal(${producto.id})" class="btn-ver-mas">Ver Detalles</button>
+                        </div>
                     `;
                     container.appendChild(div);
                 });
@@ -161,76 +265,129 @@
             const product = products.find(p => p.id == id);
             if (!product) return;
 
+            // Calcular precio con descuento
+            const precioOriginal = parseFloat(product.precio);
+            const descuento = parseFloat(product.descuento) || 0;
+            const precioFinal = descuento > 0 ? (precioOriginal - (precioOriginal * descuento / 100)).toFixed(2) : precioOriginal.toFixed(2);
+
             const modalBody = document.getElementById('modal-body');
             modalBody.innerHTML = `
-                <div class="product-container" style="background-color: rgba(25, 25, 25, 0.85); padding:20px; border-radius:10px; color: white; max-width:1000px; margin:0 auto;">
-                    <div class="top-section" style="display:flex; gap:20px;">
-                        <div class="left-column" style="flex:0 0 70%;">
-                            <video id="main-video" controls style="width:100%; max-width:600px; margin-bottom:20px;">
+                <div class="modal-producto-container">
+                    <div class="modal-izquierda">
+                        <!-- Visor principal (video o imagen) -->
+                        <div class="visor-principal">
+                            <video id="main-video" controls>
                                 <source src="video/${product.video}" type="video/mp4">
+                                Tu navegador no soporta videos.
                             </video>
-                            <img id="main-image" style="width:100%; max-width:600px; display:none; margin-bottom:20px;" alt="Imagen del producto">
-                            <div class="thumbnails" style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
-                                <div class="thumbnail" onclick="changeViewer('video')" style="cursor:pointer; border:2px solid #ff007f; padding:5px;">
-                                    <span>Video</span>
-                                </div>
-                                <img src="imagenes/${product.imagen1}" class="thumbnail" onclick="changeViewer('image', 'imagenes/${product.imagen1}')" style="width:80px; height:60px; object-fit:cover; cursor:pointer; border:2px solid transparent;">
-                                <img src="imagenes/${product.imagen2}" class="thumbnail" onclick="changeViewer('image', 'imagenes/${product.imagen2}')" style="width:80px; height:60px; object-fit:cover; cursor:pointer; border:2px solid transparent;">
-                                <img src="imagenes/${product.imagen3}" class="thumbnail" onclick="changeViewer('image', 'imagenes/${product.imagen3}')" style="width:80px; height:60px; object-fit:cover; cursor:pointer; border:2px solid transparent;">
-                                <img src="imagenes/${product.imagen4}" class="thumbnail" onclick="changeViewer('image', 'imagenes/${product.imagen4}')" style="width:80px; height:60px; object-fit:cover; cursor:pointer; border:2px solid transparent;">
+                            <img id="main-image" alt="Imagen del producto">
+                        </div>
+                        
+                        <!-- Miniaturas -->
+                        <div class="galeria-miniaturas">
+                            <div class="miniatura active" onclick="changeViewer('video')">
+                                <i class="fa fa-play-circle"></i>
+                                <span>Video</span>
                             </div>
-                            <div class="tabs">
-                                <button onclick="showTab('descripcion')" style="background:#ff007f; color:white; border:none; padding:10px; margin-right:10px; cursor:pointer;">Descripción</button>
-                                <button onclick="showTab('contenido')" style="background:#333; color:white; border:none; padding:10px; cursor:pointer;">Contenido</button>
-                                <div id="tab-descripcion" class="tab-content" style="margin-top:10px;">
-                                    <table style="width:100%; border-collapse:collapse;">
+                            <img src="imagenes/${product.imagen1}" class="miniatura" onclick="changeViewer('image', 'imagenes/${product.imagen1}')" alt="Imagen 1">
+                            <img src="imagenes/${product.imagen2}" class="miniatura" onclick="changeViewer('image', 'imagenes/${product.imagen2}')" alt="Imagen 2">
+                            <img src="imagenes/${product.imagen3}" class="miniatura" onclick="changeViewer('image', 'imagenes/${product.imagen3}')" alt="Imagen 3">
+                            <img src="imagenes/${product.imagen4}" class="miniatura" onclick="changeViewer('image', 'imagenes/${product.imagen4}')" alt="Imagen 4">
+                        </div>
+                        
+                        <!-- Pestañas de información -->
+                        <div class="info-tabs">
+                            <div class="tabs-header">
+                                <button class="tab-btn active" onclick="showTab('descripcion')">
+                                    <i class="fa fa-info-circle"></i> Descripción
+                                </button>
+                                <button class="tab-btn" onclick="showTab('especificaciones')">
+                                    <i class="fa fa-list"></i> Especificaciones
+                                </button>
+                            </div>
+                            <div class="tabs-content">
+                                <div id="tab-descripcion" class="tab-pane active">
+                                    <h3>Acerca de este juego</h3>
+                                    <p>${product.descripcion || 'Sin descripción disponible'}</p>
+                                </div>
+                                <div id="tab-especificaciones" class="tab-pane">
+                                    <table class="tabla-specs">
                                         <tr>
-                                            <th style="border:1px solid #ddd; padding:8px; color:black;">Descripción</th>
-                                            <th style="border:1px solid #ddd; padding:8px; color:black;">Contenido</th>
+                                            <td><strong>Título:</strong></td>
+                                            <td>${product.titulo}</td>
                                         </tr>
                                         <tr>
-                                            <td style="border:1px solid #ddd; padding:8px; color:black;">Producto</td>
-                                            <td style="border:1px solid #ddd; padding:8px; color:black;">${product.titulo}</td>
+                                            <td><strong>Categoría:</strong></td>
+                                            <td>${product.categoria}</td>
                                         </tr>
                                         <tr>
-                                            <td style="border:1px solid #ddd; padding:8px; color:black;">Categoría</td>
-                                            <td style="border:1px solid #ddd; padding:8px; color:black;">${product.categoria}</td>
+                                            <td><strong>Fecha de Lanzamiento:</strong></td>
+                                            <td>${product.fecha_lanzamiento}</td>
                                         </tr>
                                         <tr>
-                                            <td style="border:1px solid #ddd; padding:8px; color:black;">Descripción</td>
-                                            <td style="border:1px solid #ddd; padding:8px; color:black;">${product.descripcion}</td>
+                                            <td><strong>Precio:</strong></td>
+                                            <td>S/ ${precioOriginal.toFixed(2)}</td>
                                         </tr>
+                                        ${descuento > 0 ? `
+                                        <tr>
+                                            <td><strong>Descuento:</strong></td>
+                                            <td class="descuento-text">${descuento}% OFF</td>
+                                        </tr>` : ''}
                                     </table>
                                 </div>
-                                <div id="tab-contenido" class="tab-content" style="display:none; margin-top:10px;">
-                                    ${product.descripcion}
-                                </div>
                             </div>
-                        </div>
-                        <div class="right-column" style="flex:0 0 30%; text-align:left; padding:0;">
-                            <img src="imagenes/${product.portada}" alt="Portada ${product.titulo}" style="width:100%; border-top-left-radius:10px; border-top-right-radius:10px; border-bottom-left-radius:0; border-bottom-right-radius:0; display:block; margin-bottom:0;">
-                            <div style="padding:15px;">
-                                <h2 style="color:#ff007f; margin-bottom:10px;">${product.titulo}</h2>
-                                <p><strong>DESCRIPCIÓN DEL PRODUCTO:</strong></p>
-                                <p>${product.descripcion_corta}</p>
-                                <p><strong>FECHA DE LANZAMIENTO:</strong></p>
-                                <p>${product.fecha_lanzamiento}</p>
-                                <p><strong>PRECIO:</strong></p>
-                                <p style="font-size:24px; color:#ff007f;">S/${product.precio} PEN</p>
-                            </div>
-                            <button onclick="addToCart(${product.id})" style="width:100%; padding:15px 0; background-color:#ff007f; color:white; border:none; border-bottom-left-radius:10px; border-bottom-right-radius:10px; border-top-left-radius:0; border-top-right-radius:0; cursor:pointer; font-size:18px; display:block;">Comprar ${product.titulo}</button>
                         </div>
                     </div>
-                    <div class="bottom-section">
+                    
+                    <div class="modal-derecha">
+                        <div class="producto-portada">
+                            <img src="imagenes/${product.portada}" alt="${product.titulo}">
+                            ${descuento > 0 ? `<div class="badge-descuento-modal">-${descuento}%</div>` : ''}
+                        </div>
+                        
+                        <div class="producto-detalles">
+                            <h2 class="producto-titulo-modal">${product.titulo}</h2>
+                            <p class="producto-categoria-modal">
+                                <i class="fa fa-tag"></i> ${product.categoria}
+                            </p>
+                            
+                            <div class="producto-descripcion-corta">
+                                <p>${product.descripcion_corta || 'Descripción breve del producto'}</p>
+                            </div>
+                            
+                            <div class="producto-fecha">
+                                <i class="fa fa-calendar"></i>
+                                <strong>Fecha de Lanzamiento:</strong><br>
+                                ${product.fecha_lanzamiento}
+                            </div>
+                            
+                            <div class="producto-precio-modal">
+                                ${descuento > 0 ? `
+                                    <div class="precio-con-descuento">
+                                        <span class="precio-tachado">S/ ${precioOriginal.toFixed(2)}</span>
+                                        <span class="precio-actual">S/ ${precioFinal}</span>
+                                        <span class="ahorro-text">Ahorras S/ ${(precioOriginal - precioFinal).toFixed(2)}</span>
+                                    </div>
+                                ` : `
+                                    <span class="precio-actual">S/ ${precioFinal}</span>
+                                `}
+                            </div>
+                            
+                            <button onclick="addToCart(${product.id})" class="btn-comprar-modal">
+                                <i class="fa fa-shopping-cart"></i> Agregar al Carrito
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
 
             const modalContent = document.querySelector('.modal-content');
-            modalContent.style.backgroundImage = `url('imagenes/${product.fondo}')`;
-            modalContent.style.backgroundSize = 'cover';
-            modalContent.style.backgroundPosition = 'center';
-            modalContent.style.backgroundRepeat = 'no-repeat';
+            if (product.fondo) {
+                modalContent.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('imagenes/${product.fondo}')`;
+                modalContent.style.backgroundSize = 'cover';
+                modalContent.style.backgroundPosition = 'center';
+                modalContent.style.backgroundRepeat = 'no-repeat';
+            }
 
             document.getElementById('productModal').style.display = 'block';
         }
@@ -248,46 +405,78 @@
         }
 
         function addToCart(id) {
+            // Obtener carrito actual
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            
+            // Agregar producto
             cart.push(id);
             localStorage.setItem('cart', JSON.stringify(cart));
-            alert('Producto agregado al carrito');
+            
+            // Forzar que se guarde en localStorage inmediatamente
+            console.log('✅ Producto agregado al carrito:', id);
+            console.log('📦 Carrito actual:', cart);
+            
+            // Buscar el producto para mostrar su nombre
+            const product = products.find(p => p.id === id);
+            const productName = product ? product.titulo : 'Producto';
+            
+            // Mensaje de confirmación con opción de ir al carrito
+            const goToCart = confirm(`✅ ¡${productName} agregado al carrito!\n\n¿Deseas ir al carrito ahora?`);
+            
+            if (goToCart) {
+                // Pequeño delay para asegurar que localStorage se guardó
+                setTimeout(() => {
+                    window.location.href = 'carrito.html';
+                }, 100);
+            } else {
+                // Cerrar el modal si el usuario quiere seguir comprando
+                closeModal();
+            }
         }
 
         function changeViewer(type, src) {
             const video = document.getElementById('main-video');
             const image = document.getElementById('main-image');
-            const thumbnails = document.querySelectorAll('.thumbnail');
-            thumbnails.forEach(thumb => thumb.style.borderColor = 'transparent');
+            const miniaturas = document.querySelectorAll('.miniatura');
+            
+            // Resetear borde de todas las miniaturas
+            miniaturas.forEach(thumb => thumb.classList.remove('active'));
+            
             if (type === 'video') {
                 video.style.display = 'block';
                 image.style.display = 'none';
-                event.target.style.borderColor = '#ff007f';
+                // Marcar la miniatura de video como activa
+                miniaturas[0].classList.add('active');
             } else {
                 video.style.display = 'none';
                 image.style.display = 'block';
                 image.src = src;
-                event.target.style.borderColor = '#ff007f';
+                // Marcar la miniatura clickeada como activa
+                event.currentTarget.classList.add('active');
             }
         }
 
         function showTab(tab) {
-            const desc = document.getElementById('tab-descripcion');
-            const cont = document.getElementById('tab-contenido');
-            const buttons = document.querySelectorAll('.tabs button');
-            buttons.forEach(btn => btn.style.background = '#333');
+            const tabDescripcion = document.getElementById('tab-descripcion');
+            const tabEspecificaciones = document.getElementById('tab-especificaciones');
+            const buttons = document.querySelectorAll('.tab-btn');
+            
+            // Remover clase active de todos los botones y tabs
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
             if (tab === 'descripcion') {
-                desc.style.display = 'block';
-                cont.style.display = 'none';
-                buttons[0].style.background = '#ff007f';
-            } else {
-                desc.style.display = 'none';
-                cont.style.display = 'block';
-                buttons[1].style.background = '#ff007f';
+                tabDescripcion.classList.add('active');
+                tabEspecificaciones.classList.remove('active');
+                buttons[0].classList.add('active');
+            } else if (tab === 'especificaciones') {
+                tabDescripcion.classList.remove('active');
+                tabEspecificaciones.classList.add('active');
+                buttons[1].classList.add('active');
             }
         }
 
         // Load products on page load
+        loadCategories();
         loadProducts();
     </script>
 </body>
