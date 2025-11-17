@@ -51,14 +51,16 @@ const upload = multer({
 
 const uploadCategoria = multer({ dest: 'imagenes/' });
 
-// Middleware
-app.use(express.json());
-app.use(express.static('.'));
-
-// Supabase Client
+// Supabase Client (DEBE ESTAR ANTES DE LAS RUTAS)
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Middleware
+app.use(express.json());
+
+// Servir archivos estáticos
+app.use(express.static('.'));
 
 // Routes
 
@@ -774,68 +776,6 @@ app.post('/api/upload', upload.fields([
       message: 'Archivos subidos correctamente'
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// POST /api/productos/actualizar-fondos - Actualizar fondos de todos los productos
-app.post('/api/productos/actualizar-fondos', async (req, res) => {
-  try {
-    // Obtener todos los productos
-    const { data: productos, error: prodError } = await supabase
-      .from('productos')
-      .select('id, categoria');
-
-    if (prodError) {
-      return res.status(500).json({ error: prodError.message });
-    }
-
-    // Obtener todas las categorías
-    const { data: categorias, error: catError } = await supabase
-      .from('categorias')
-      .select('nombre, fondo');
-
-    if (catError) {
-      return res.status(500).json({ error: catError.message });
-    }
-
-    // Crear un mapa de categoría -> fondo
-    const categoriaFondoMap = {};
-    categorias.forEach(cat => {
-      categoriaFondoMap[cat.nombre] = cat.fondo;
-    });
-
-    // Actualizar cada producto
-    let actualizados = 0;
-    let errores = 0;
-
-    for (const producto of productos) {
-      const fondo = categoriaFondoMap[producto.categoria];
-      
-      if (fondo) {
-        const { error: updateError } = await supabase
-          .from('productos')
-          .update({ fondo })
-          .eq('id', producto.id);
-
-        if (updateError) {
-          console.error(`Error actualizando producto ${producto.id}:`, updateError);
-          errores++;
-        } else {
-          actualizados++;
-        }
-      }
-    }
-
-    res.json({ 
-      success: true, 
-      actualizados,
-      errores,
-      total: productos.length,
-      message: `Se actualizaron ${actualizados} productos correctamente` 
-    });
-  } catch (error) {
-    console.error('Error actualizando fondos:', error);
     res.status(500).json({ error: error.message });
   }
 });

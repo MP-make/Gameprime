@@ -506,7 +506,7 @@ Descripción: ${p.descripcion}
                   <label>Imagen 1 (galería)</label>
                   <div class="image-upload-container">
                     <input type="file" id="edit-imagen1Producto" accept="image/*" style="display: none;">
-                    <label for="edit-imagen1Producto" class="image-upload-label" id="edit-labelImagen1">
+                    <label for="edit-imagen1Producto" class="image-upload-label ${p.imagen1 ? 'has-image' : ''}" id="edit-labelImagen1" style="${p.imagen1 ? `background-image: url(imagenes/${p.imagen1})` : ''}">
                       <span class="plus-icon">+</span>
                       <button type="button" class="delete-btn" onclick="clearImage('edit-imagen1Producto', 'edit-labelImagen1')">×</button>
                     </label>
@@ -516,7 +516,7 @@ Descripción: ${p.descripcion}
                   <label>Imagen 2 (galería)</label>
                   <div class="image-upload-container">
                     <input type="file" id="edit-imagen2Producto" accept="image/*" style="display: none;">
-                    <label for="edit-imagen2Producto" class="image-upload-label" id="edit-labelImagen2">
+                    <label for="edit-imagen2Producto" class="image-upload-label ${p.imagen2 ? 'has-image' : ''}" id="edit-labelImagen2" style="${p.imagen2 ? `background-image: url(imagenes/${p.imagen2})` : ''}">
                       <span class="plus-icon">+</span>
                       <button type="button" class="delete-btn" onclick="clearImage('edit-imagen2Producto', 'edit-labelImagen2')">×</button>
                     </label>
@@ -526,7 +526,7 @@ Descripción: ${p.descripcion}
                   <label>Imagen 3 (galería)</label>
                   <div class="image-upload-container">
                     <input type="file" id="edit-imagen3Producto" accept="image/*" style="display: none;">
-                    <label for="edit-imagen3Producto" class="image-upload-label" id="edit-labelImagen3">
+                    <label for="edit-imagen3Producto" class="image-upload-label ${p.imagen3 ? 'has-image' : ''}" id="edit-labelImagen3" style="${p.imagen3 ? `background-image: url(imagenes/${p.imagen3})` : ''}">
                       <span class="plus-icon">+</span>
                       <button type="button" class="delete-btn" onclick="clearImage('edit-imagen3Producto', 'edit-labelImagen3')">×</button>
                     </label>
@@ -536,7 +536,7 @@ Descripción: ${p.descripcion}
                   <label>Imagen 4 (galería)</label>
                   <div class="image-upload-container">
                     <input type="file" id="edit-imagen4Producto" accept="image/*" style="display: none;">
-                    <label for="edit-imagen4Producto" class="image-upload-label" id="edit-labelImagen4">
+                    <label for="edit-imagen4Producto" class="image-upload-label ${p.imagen4 ? 'has-image' : ''}" id="edit-labelImagen4" style="${p.imagen4 ? `background-image: url(imagenes/${p.imagen4})` : ''}">
                       <span class="plus-icon">+</span>
                       <button type="button" class="delete-btn" onclick="clearImage('edit-imagen4Producto', 'edit-labelImagen4')">×</button>
                     </label>
@@ -552,8 +552,8 @@ Descripción: ${p.descripcion}
               <div style="margin-bottom: 15px;">
                 <label>Portada (imagen) *</label>
                 <div class="image-upload-container">
-                  <input type="file" id="edit-portadaProducto" accept="image/*" style="display: none;" required>
-                  <label for="edit-portadaProducto" class="image-upload-label" id="edit-labelPortada">
+                  <input type="file" id="edit-portadaProducto" accept="image/*" style="display: none;">
+                  <label for="edit-portadaProducto" class="image-upload-label ${p.portada ? 'has-image' : ''}" id="edit-labelPortada" style="${p.portada ? `background-image: url(imagenes/${p.portada})` : ''}">
                     <span class="plus-icon">+</span>
                     <button type="button" class="delete-btn" onclick="clearImage('edit-portadaProducto', 'edit-labelPortada')">×</button>
                   </label>
@@ -592,29 +592,7 @@ Descripción: ${p.descripcion}
         </form>
       `;
 
-      // Set current images
-      if (p.portada) {
-        document.getElementById('edit-labelPortada').style.backgroundImage = `url(imagenes/${p.portada})`;
-        document.getElementById('edit-labelPortada').classList.add('has-image');
-      }
-      if (p.imagen1) {
-        document.getElementById('edit-labelImagen1').style.backgroundImage = `url(imagenes/${p.imagen1})`;
-        document.getElementById('edit-labelImagen1').classList.add('has-image');
-      }
-      if (p.imagen2) {
-        document.getElementById('edit-labelImagen2').style.backgroundImage = `url(imagenes/${p.imagen2})`;
-        document.getElementById('edit-labelImagen2').classList.add('has-image');
-      }
-      if (p.imagen3) {
-        document.getElementById('edit-labelImagen3').style.backgroundImage = `url(imagenes/${p.imagen3})`;
-        document.getElementById('edit-labelImagen3').classList.add('has-image');
-      }
-      if (p.imagen4) {
-        document.getElementById('edit-labelImagen4').style.backgroundImage = `url(imagenes/${p.imagen4})`;
-        document.getElementById('edit-labelImagen4').classList.add('has-image');
-      }
-
-      // Setup image previews
+      // Setup image previews for new file selections
       setupImagePreview('edit-portadaProducto');
       setupImagePreview('edit-imagen1Producto');
       setupImagePreview('edit-imagen2Producto');
