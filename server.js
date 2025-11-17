@@ -49,6 +49,8 @@ const upload = multer({
   }
 });
 
+const uploadCategoria = multer({ dest: 'imagenes/' });
+
 // Middleware
 app.use(express.json());
 app.use(express.static('.'));
@@ -77,8 +79,8 @@ app.get('/api/productos', async (req, res) => {
   }
 });
 
-// GET /api/producto/:id - Obtener un producto por ID
-app.get('/api/producto/:id', async (req, res) => {
+// GET /api/productos/:id - Obtener un producto por ID
+app.get('/api/productos/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const { data, error } = await supabase
@@ -105,7 +107,6 @@ app.get('/api/producto/:id', async (req, res) => {
 app.post('/api/productos', upload.fields([
   { name: 'portada', maxCount: 1 },
   { name: 'video', maxCount: 1 },
-  { name: 'fondo', maxCount: 1 },
   { name: 'imagen1', maxCount: 1 },
   { name: 'imagen2', maxCount: 1 },
   { name: 'imagen3', maxCount: 1 },
@@ -120,11 +121,19 @@ app.post('/api/productos', upload.fields([
     return res.status(400).json({ error: 'Título, categoría, precio y fecha de lanzamiento son requeridos' });
   }
 
+  // Obtener fondo de la categoría
+  const { data: catData, error: catError } = await supabase
+    .from('categorias')
+    .select('fondo')
+    .eq('nombre', categoria)
+    .single();
+
+  const fondo = catData ? catData.fondo : null;
+
   // Obtener nombres de archivos subidos
   const files = req.files;
   const portada = files.portada ? files.portada[0].filename : null;
   const video = files.video ? files.video[0].filename : null;
-  const fondo = files.fondo ? files.fondo[0].filename : null;
   const imagen1 = files.imagen1 ? files.imagen1[0].filename : null;
   const imagen2 = files.imagen2 ? files.imagen2[0].filename : null;
   const imagen3 = files.imagen3 ? files.imagen3[0].filename : null;
@@ -152,15 +161,50 @@ app.post('/api/productos', upload.fields([
 });
 
 // PUT /api/productos/:id - Actualizar un producto
-app.put('/api/productos/:id', async (req, res) => {
+app.put('/api/productos/:id', upload.fields([
+  { name: 'portada', maxCount: 1 },
+  { name: 'video', maxCount: 1 },
+  { name: 'imagen1', maxCount: 1 },
+  { name: 'imagen2', maxCount: 1 },
+  { name: 'imagen3', maxCount: 1 },
+  { name: 'imagen4', maxCount: 1 }
+]), async (req, res) => {
   const { id } = req.params;
-  const { titulo, categoria, precio, fecha_lanzamiento, descuento } = req.body;
+  const { titulo, categoria, precio, fecha_lanzamiento, descuento, descripcion_corta, descripcion } = req.body;
+
+  // Obtener fondo de la nueva categoría
+  const { data: catData } = await supabase
+    .from('categorias')
+    .select('fondo')
+    .eq('nombre', categoria)
+    .single();
+
+  const fondo = catData ? catData.fondo : null;
+
+  // Obtener nombres de archivos subidos
+  const files = req.files;
+  const portada = files.portada ? files.portada[0].filename : null;
+  const video = files.video ? files.video[0].filename : null;
+  const imagen1 = files.imagen1 ? files.imagen1[0].filename : null;
+  const imagen2 = files.imagen2 ? files.imagen2[0].filename : null;
+  const imagen3 = files.imagen3 ? files.imagen3[0].filename : null;
+  const imagen4 = files.imagen4 ? files.imagen4[0].filename : null;
+
+  const updateData = { titulo, categoria, precio: parseFloat(precio), fecha_lanzamiento, descuento: parseFloat(descuento) || 0, descripcion_corta, descripcion, fondo };
+
+  if (portada) updateData.portada = portada;
+  if (video) updateData.video = video;
+  if (imagen1) updateData.imagen1 = imagen1;
+  if (imagen2) updateData.imagen2 = imagen2;
+  if (imagen3) updateData.imagen3 = imagen3;
+  if (imagen4) updateData.imagen4 = imagen4;
 
   try {
     const { data, error } = await supabase
       .from('productos')
-      .update({ titulo, categoria, precio, fecha_lanzamiento, descuento })
-      .eq('id', id);
+      .update(updateData)
+      .eq('id', id)
+      .select();
 
     if (error) {
       return res.status(500).json({ error: error.message });
@@ -472,17 +516,19 @@ app.get('/api/categorias', async (req, res) => {
 });
 
 // POST /api/categorias - Agregar una categoría
-app.post('/api/categorias', async (req, res) => {
+app.post('/api/categorias', uploadCategoria.single('fondo'), async (req, res) => {
   const { nombre, descripcion } = req.body;
 
   if (!nombre) {
     return res.status(400).json({ error: 'El nombre es requerido' });
   }
 
+  const fondo = req.file ? req.file.filename : null;
+
   try {
     const { data, error } = await supabase
       .from('categorias')
-      .insert([{ nombre, descripcion }])
+      .insert([{ nombre, descripcion, fondo }])
       .select();
 
     if (error) {
@@ -496,14 +542,19 @@ app.post('/api/categorias', async (req, res) => {
 });
 
 // PUT /api/categorias/:id - Actualizar una categoría
-app.put('/api/categorias/:id', async (req, res) => {
+app.put('/api/categorias/:id', uploadCategoria.single('fondo'), async (req, res) => {
   const { id } = req.params;
   const { nombre, descripcion } = req.body;
+
+  const fondo = req.file ? req.file.filename : null;
+
+  const updateData = { nombre, descripcion };
+  if (fondo) updateData.fondo = fondo;
 
   try {
     const { data, error } = await supabase
       .from('categorias')
-      .update({ nombre, descripcion })
+      .update(updateData)
       .eq('id', id)
       .select();
 

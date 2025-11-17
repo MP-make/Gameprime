@@ -70,7 +70,7 @@
             }
 
             try {
-                const response = await fetch(`/api/producto/${id}`);
+                const response = await fetch(`/api/productos/${id}`);
                 if (!response.ok) {
                     throw new Error('Error al cargar el producto');
                 }
@@ -136,4 +136,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-``` 

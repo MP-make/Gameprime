@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             <input type="file" id="videoProducto" accept="video/*">
           </div>
           <h3>Imágenes del Producto</h3>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px;">
             <div style="display: flex; flex-direction: column; align-items: center;">
               <label>Portada (imagen) *</label>
               <div class="image-upload-container">
@@ -149,16 +149,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <label for="portadaProducto" class="image-upload-label" id="labelPortada">
                   <span class="plus-icon">+</span>
                   <button type="button" class="delete-btn" onclick="clearImage('portadaProducto', 'labelPortada')">×</button>
-                </label>
-              </div>
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: center;">
-              <label>Imagen Fondo (opcional)</label>
-              <div class="image-upload-container">
-                <input type="file" id="fondoProducto" accept="image/*" style="display: none;">
-                <label for="fondoProducto" class="image-upload-label" id="labelFondo">
-                  <span class="plus-icon">+</span>
-                  <button type="button" class="delete-btn" onclick="clearImage('fondoProducto', 'labelFondo')">×</button>
                 </label>
               </div>
             </div>
@@ -224,12 +214,21 @@ document.addEventListener("DOMContentLoaded", async () => {
               <th>Categoría</th>
               <th>Precio</th>
               <th>Descuento</th>
-              <th>Portada</th>
+              <th>Fondo</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody id="cuerpoProductos"></tbody>
         </table>
+      </div>
+      <!-- Modal for editing product -->
+      <div id="editModal" class="modal" style="display:none;">
+        <div class="modal-content">
+          <span class="close" onclick="closeEditModal()">&times;</span>
+          <div id="edit-modal-body">
+            <!-- Edit form will be loaded here -->
+          </div>
+        </div>
       </div>
     `;
     // Attach event listener
@@ -237,7 +236,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     // Preview de imágenes
     setupImagePreview('portadaProducto');
-    setupImagePreview('fondoProducto');
     setupImagePreview('imagen1Producto');
     setupImagePreview('imagen2Producto');
     setupImagePreview('imagen3Producto');
@@ -288,7 +286,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   function resetImagePreviews() {
     const imageFields = [
       { inputId: 'portadaProducto', labelId: 'labelPortada' },
-      { inputId: 'fondoProducto', labelId: 'labelFondo' },
       { inputId: 'imagen1Producto', labelId: 'labelImagen1' },
       { inputId: 'imagen2Producto', labelId: 'labelImagen2' },
       { inputId: 'imagen3Producto', labelId: 'labelImagen3' },
@@ -337,7 +334,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       fecha_lanzamiento: document.getElementById('fechaLanzamiento').value.trim(),
       portada: document.getElementById('portadaProducto').files[0],
       video: document.getElementById('videoProducto').files[0],
-      fondo: document.getElementById('fondoProducto').files[0],
       imagen1: document.getElementById('imagen1Producto').files[0],
       imagen2: document.getElementById('imagen2Producto').files[0],
       imagen3: document.getElementById('imagen3Producto').files[0],
@@ -390,9 +386,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             <td>${p.categoria}</td>
             <td>S/ ${p.precio}</td>
             <td>${p.descuento}%</td>
-            <td>${p.portada || 'N/A'}</td>
+            <td>${p.fondo || 'N/A'}</td>
             <td>
-              <button onclick="verProducto(${p.id})" class="modificar">Ver</button>
+              <button onclick="editarProducto(${p.id})" class="modificar">Editar</button>
               <button onclick="eliminarProducto(${p.id})" class="eliminar">Eliminar</button>
             </td>
           `;
@@ -411,7 +407,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Function to view product details
   async function verProducto(id) {
     try {
-      const response = await fetch(`/api/producto/${id}`);
+      const response = await fetch(`/api/productos/${id}`);
       if (!response.ok) throw new Error('Error al cargar producto');
       const p = await response.json();
       
@@ -455,6 +451,206 @@ Descripción: ${p.descripcion}
 
   window.verProducto = verProducto;
   window.eliminarProducto = eliminarProducto;
+
+  // Function to edit product
+  async function editarProducto(id) {
+    try {
+      const response = await fetch(`/api/productos/${id}`);
+      if (!response.ok) throw new Error('Error al cargar producto');
+      const p = await response.json();
+
+      // Load categories for select
+      const catResponse = await fetch('/api/categorias');
+      const categorias = catResponse.ok ? await catResponse.json() : [];
+
+      const modalBody = document.getElementById('edit-modal-body');
+      modalBody.innerHTML = `
+        <form id="editFormProducto" enctype="multipart/form-data">
+          <div class="modal-producto-container">
+            <div class="modal-izquierda">
+              <div style="margin-bottom: 15px;">
+                <label>Reemplazar Video (opcional)</label>
+                ${p.video ? `<div style="margin-bottom: 5px;">Video actual: <video src="video/${p.video}" controls width="840" height="500"></video></div>` : ''}
+                <input type="file" id="edit-videoProducto" accept="video/*" style="display: none;">
+                <label for="edit-videoProducto" style="cursor: pointer; background: #007bff; color: white; padding: 8px 12px; border-radius: 4px; display: inline-block;">Reemplazar Video</label>
+              </div>
+              <h3>Imágenes del Producto</h3>
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                  <label>Imagen 1 (galería)</label>
+                  <div class="image-upload-container">
+                    <input type="file" id="edit-imagen1Producto" accept="image/*" style="display: none;">
+                    <label for="edit-imagen1Producto" class="image-upload-label" id="edit-labelImagen1">
+                      <span class="plus-icon">+</span>
+                      <button type="button" class="delete-btn" onclick="clearImage('edit-imagen1Producto', 'edit-labelImagen1')">×</button>
+                    </label>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                  <label>Imagen 2 (galería)</label>
+                  <div class="image-upload-container">
+                    <input type="file" id="edit-imagen2Producto" accept="image/*" style="display: none;">
+                    <label for="edit-imagen2Producto" class="image-upload-label" id="edit-labelImagen2">
+                      <span class="plus-icon">+</span>
+                      <button type="button" class="delete-btn" onclick="clearImage('edit-imagen2Producto', 'edit-labelImagen2')">×</button>
+                    </label>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                  <label>Imagen 3 (galería)</label>
+                  <div class="image-upload-container">
+                    <input type="file" id="edit-imagen3Producto" accept="image/*" style="display: none;">
+                    <label for="edit-imagen3Producto" class="image-upload-label" id="edit-labelImagen3">
+                      <span class="plus-icon">+</span>
+                      <button type="button" class="delete-btn" onclick="clearImage('edit-imagen3Producto', 'edit-labelImagen3')">×</button>
+                    </label>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                  <label>Imagen 4 (galería)</label>
+                  <div class="image-upload-container">
+                    <input type="file" id="edit-imagen4Producto" accept="image/*" style="display: none;">
+                    <label for="edit-imagen4Producto" class="image-upload-label" id="edit-labelImagen4">
+                      <span class="plus-icon">+</span>
+                      <button type="button" class="delete-btn" onclick="clearImage('edit-imagen4Producto', 'edit-labelImagen4')">×</button>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top: 15px;">
+                <label>Descripción Completa (pestaña descripción)</label>
+                <textarea id="edit-descripcionProducto" placeholder="Descripción detallada del producto" rows="6" style="width: 100%; resize: vertical;">${p.descripcion || ''}</textarea>
+              </div>
+            </div>
+            <div class="modal-derecha">
+              <div style="margin-bottom: 15px;">
+                <label>Portada (imagen) *</label>
+                <div class="image-upload-container">
+                  <input type="file" id="edit-portadaProducto" accept="image/*" style="display: none;" required>
+                  <label for="edit-portadaProducto" class="image-upload-label" id="edit-labelPortada">
+                    <span class="plus-icon">+</span>
+                    <button type="button" class="delete-btn" onclick="clearImage('edit-portadaProducto', 'edit-labelPortada')">×</button>
+                  </label>
+                </div>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <label>Título del Producto *</label>
+                <input type="text" id="edit-tituloProducto" value="${p.titulo}" required>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <label>Categoría *</label>
+                <select id="edit-categoriaProducto" required>
+                  <option value="">Selecciona una categoría</option>
+                  ${categorias.map(cat => `<option value="${cat.nombre}" ${cat.nombre === p.categoria ? 'selected' : ''}>${cat.nombre}</option>`).join('')}
+                </select>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <label>Descripción Corta (para vista de compra) *</label>
+                <textarea id="edit-descripcionCortaProducto" placeholder="Descripción breve del producto" rows="3" required style="width: 100%; resize: vertical;">${p.descripcion_corta || ''}</textarea>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <label>Fecha de Lanzamiento *</label>
+                <input type="date" id="edit-fechaLanzamiento" value="${p.fecha_lanzamiento}" required>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <label>Precio (S/) *</label>
+                <input type="number" id="edit-precioProducto" value="${p.precio}" step="0.01" required>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <label>Descuento (%)</label>
+                <input type="number" id="edit-descuentoProducto" value="${p.descuento || 0}" min="0" max="100">
+              </div>
+              <button type="button" onclick="guardarCambios(${id})" style="margin-top: 15px;">Guardar Cambios</button>
+            </div>
+          </div>
+        </form>
+      `;
+
+      // Set current images
+      if (p.portada) {
+        document.getElementById('edit-labelPortada').style.backgroundImage = `url(imagenes/${p.portada})`;
+        document.getElementById('edit-labelPortada').classList.add('has-image');
+      }
+      if (p.imagen1) {
+        document.getElementById('edit-labelImagen1').style.backgroundImage = `url(imagenes/${p.imagen1})`;
+        document.getElementById('edit-labelImagen1').classList.add('has-image');
+      }
+      if (p.imagen2) {
+        document.getElementById('edit-labelImagen2').style.backgroundImage = `url(imagenes/${p.imagen2})`;
+        document.getElementById('edit-labelImagen2').classList.add('has-image');
+      }
+      if (p.imagen3) {
+        document.getElementById('edit-labelImagen3').style.backgroundImage = `url(imagenes/${p.imagen3})`;
+        document.getElementById('edit-labelImagen3').classList.add('has-image');
+      }
+      if (p.imagen4) {
+        document.getElementById('edit-labelImagen4').style.backgroundImage = `url(imagenes/${p.imagen4})`;
+        document.getElementById('edit-labelImagen4').classList.add('has-image');
+      }
+
+      // Setup image previews
+      setupImagePreview('edit-portadaProducto');
+      setupImagePreview('edit-imagen1Producto');
+      setupImagePreview('edit-imagen2Producto');
+      setupImagePreview('edit-imagen3Producto');
+      setupImagePreview('edit-imagen4Producto');
+
+      document.getElementById('editModal').style.display = 'block';
+    } catch (error) {
+      alert("❌ Error al cargar producto para editar: " + error.message);
+    }
+  }
+
+  // Function to close edit modal
+  function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+  }
+
+  // Function to save changes
+  async function guardarCambios(id) {
+    const productoData = {
+      titulo: document.getElementById('edit-tituloProducto').value.trim(),
+      categoria: document.getElementById('edit-categoriaProducto').value.trim(),
+      precio: parseFloat(document.getElementById('edit-precioProducto').value.trim()),
+      descuento: parseFloat(document.getElementById('edit-descuentoProducto').value.trim()) || 0,
+      fecha_lanzamiento: document.getElementById('edit-fechaLanzamiento').value.trim(),
+      portada: document.getElementById('edit-portadaProducto').files[0],
+      video: document.getElementById('edit-videoProducto').files[0],
+      imagen1: document.getElementById('edit-imagen1Producto').files[0],
+      imagen2: document.getElementById('edit-imagen2Producto').files[0],
+      imagen3: document.getElementById('edit-imagen3Producto').files[0],
+      imagen4: document.getElementById('edit-imagen4Producto').files[0],
+      descripcion_corta: document.getElementById('edit-descripcionCortaProducto').value.trim(),
+      descripcion: document.getElementById('edit-descripcionProducto').value.trim()
+    };
+
+    try {
+      const formData = new FormData();
+      for (const key in productoData) {
+        formData.append(key, productoData[key]);
+      }
+
+      const response = await fetch(`/api/productos/${id}`, {
+        method: 'PUT',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error desconocido');
+      }
+
+      alert("✅ Producto actualizado correctamente.");
+      closeEditModal();
+      cargarProductos();
+    } catch (error) {
+      alert("❌ Error al actualizar producto: " + error.message);
+    }
+  }
+
+  window.editarProducto = editarProducto;
+  window.closeEditModal = closeEditModal;
+  window.guardarCambios = guardarCambios;
 
   // === USUARIOS ===
   function loadUsuarios(mainContent) {
@@ -736,8 +932,9 @@ Descripción: ${p.descripcion}
       <h2>Gestión de Categorías</h2>
       <div class="section">
         <h3>Agregar Categoría</h3>
-        <form id="formCategoria">
+        <form id="formCategoria" enctype="multipart/form-data">
           <input type="text" id="nombreCategoria" placeholder="Nombre de la categoría (ej. Acción)" required>
+          <input type="file" id="fondoCategoria" accept="image/*" required>
           <textarea id="descripcionCategoria" placeholder="Descripción (opcional)" rows="3" style="width: 100%; resize: vertical;"></textarea>
           <button type="submit">Agregar Categoría</button>
         </form>
@@ -749,6 +946,7 @@ Descripción: ${p.descripcion}
             <tr>
               <th>ID</th>
               <th>Nombre</th>
+              <th>Fondo</th>
               <th>Descripción</th>
               <th>Acciones</th>
             </tr>
@@ -766,11 +964,16 @@ Descripción: ${p.descripcion}
     const nombre = document.getElementById("nombreCategoria").value.trim();
     const descripcion = document.getElementById("descripcionCategoria").value.trim();
 
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    formData.append('descripcion', descripcion);
+    const fondoFile = document.getElementById('fondoCategoria').files[0];
+    if (fondoFile) formData.append('fondo', fondoFile);
+
     try {
       const response = await fetch('/api/categorias', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, descripcion })
+        body: formData
       });
 
       if (!response.ok) {
@@ -802,6 +1005,7 @@ Descripción: ${p.descripcion}
           tr.innerHTML = `
             <td>${c.id}</td>
             <td>${c.nombre}</td>
+            <td>${c.fondo || 'N/A'}</td>
             <td>${c.descripcion || 'N/A'}</td>
             <td>
               <button onclick="modificarCategoria(${c.id}, '${c.nombre}', '${c.descripcion || ''}')" class="modificar">Modificar</button>
