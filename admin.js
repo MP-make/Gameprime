@@ -110,17 +110,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       <div class="section">
         <h3>Agregar Producto</h3>
         <form id="formProducto" enctype="multipart/form-data">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div>
-              <label>Título del Producto *</label>
-              <input type="text" id="tituloProducto" placeholder="Ej: The Last of Us Part I" required>
-            </div>
-            <div>
-              <label>Categoría *</label>
-              <select id="categoriaProducto" required>
-                <option value="">Selecciona una categoría</option>
-              </select>
-            </div>
+          <div style="margin-bottom: 15px;">
+            <label>Título del Producto *</label>
+            <input type="text" id="tituloProducto" placeholder="Ej: The Last of Us Part I" required style="width: 100%;">
+          </div>
+          <div style="margin-bottom: 15px;">
+            <label>Categoría *</label>
+            <select id="categoriaProducto" required style="width: 100%;">
+              <option value="">Selecciona una categoría</option>
+            </select>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px;">
             <div>
               <label>Precio (S/) *</label>
               <input type="number" id="precioProducto" placeholder="59.99" step="0.01" required>
@@ -133,39 +133,72 @@ document.addEventListener("DOMContentLoaded", async () => {
               <label>Fecha de Lanzamiento *</label>
               <input type="date" id="fechaLanzamiento" required>
             </div>
-            <div>
+          </div>
+          <div style="margin-top: 15px;">
+            <label>Video (opcional)</label>
+            <input type="file" id="videoProducto" accept="video/*">
+          </div>
+          <h3>Imágenes del Producto</h3>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
               <label>Portada (imagen) *</label>
-              <input type="file" id="portadaProducto" accept="image/*" required>
-              <img id="previewPortada" style="max-width: 100px; margin-top: 5px; display: none;">
+              <div class="image-upload-container">
+                <input type="file" id="portadaProducto" accept="image/*" style="display: none;" required>
+                <label for="portadaProducto" class="image-upload-label" id="labelPortada">
+                  <span class="plus-icon">+</span>
+                  <button type="button" class="delete-btn" onclick="clearImage('portadaProducto', 'labelPortada')">×</button>
+                </label>
+              </div>
             </div>
-            <div>
-              <label>Video (opcional)</label>
-              <input type="file" id="videoProducto" accept="video/*">
-            </div>
-            <div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
               <label>Imagen Fondo (opcional)</label>
-              <input type="file" id="fondoProducto" accept="image/*">
-              <img id="previewFondo" style="max-width: 100px; margin-top: 5px; display: none;">
+              <div class="image-upload-container">
+                <input type="file" id="fondoProducto" accept="image/*" style="display: none;">
+                <label for="fondoProducto" class="image-upload-label" id="labelFondo">
+                  <span class="plus-icon">+</span>
+                  <button type="button" class="delete-btn" onclick="clearImage('fondoProducto', 'labelFondo')">×</button>
+                </label>
+              </div>
             </div>
-            <div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
               <label>Imagen 1 (galería)</label>
-              <input type="file" id="imagen1Producto" accept="image/*">
-              <img id="previewImagen1" style="max-width: 100px; margin-top: 5px; display: none;">
+              <div class="image-upload-container">
+                <input type="file" id="imagen1Producto" accept="image/*" style="display: none;">
+                <label for="imagen1Producto" class="image-upload-label" id="labelImagen1">
+                  <span class="plus-icon">+</span>
+                  <button type="button" class="delete-btn" onclick="clearImage('imagen1Producto', 'labelImagen1')">×</button>
+                </label>
+              </div>
             </div>
-            <div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
               <label>Imagen 2 (galería)</label>
-              <input type="file" id="imagen2Producto" accept="image/*">
-              <img id="previewImagen2" style="max-width: 100px; margin-top: 5px; display: none;">
+              <div class="image-upload-container">
+                <input type="file" id="imagen2Producto" accept="image/*" style="display: none;">
+                <label for="imagen2Producto" class="image-upload-label" id="labelImagen2">
+                  <span class="plus-icon">+</span>
+                  <button type="button" class="delete-btn" onclick="clearImage('imagen2Producto', 'labelImagen2')">×</button>
+                </label>
+              </div>
             </div>
-            <div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
               <label>Imagen 3 (galería)</label>
-              <input type="file" id="imagen3Producto" accept="image/*">
-              <img id="previewImagen3" style="max-width: 100px; margin-top: 5px; display: none;">
+              <div class="image-upload-container">
+                <input type="file" id="imagen3Producto" accept="image/*" style="display: none;">
+                <label for="imagen3Producto" class="image-upload-label" id="labelImagen3">
+                  <span class="plus-icon">+</span>
+                  <button type="button" class="delete-btn" onclick="clearImage('imagen3Producto', 'labelImagen3')">×</button>
+                </label>
+              </div>
             </div>
-            <div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
               <label>Imagen 4 (galería)</label>
-              <input type="file" id="imagen4Producto" accept="image/*">
-              <img id="previewImagen4" style="max-width: 100px; margin-top: 5px; display: none;">
+              <div class="image-upload-container">
+                <input type="file" id="imagen4Producto" accept="image/*" style="display: none;">
+                <label for="imagen4Producto" class="image-upload-label" id="labelImagen4">
+                  <span class="plus-icon">+</span>
+                  <button type="button" class="delete-btn" onclick="clearImage('imagen4Producto', 'labelImagen4')">×</button>
+                </label>
+              </div>
             </div>
           </div>
           <div style="margin-top: 15px;">
@@ -201,36 +234,72 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("formProducto").addEventListener("submit", agregarProducto);
     
     // Preview de imágenes
-    setupImagePreview('portadaProducto', 'previewPortada');
-    setupImagePreview('fondoProducto', 'previewFondo');
-    setupImagePreview('imagen1Producto', 'previewImagen1');
-    setupImagePreview('imagen2Producto', 'previewImagen2');
-    setupImagePreview('imagen3Producto', 'previewImagen3');
-    setupImagePreview('imagen4Producto', 'previewImagen4');
+    setupImagePreview('portadaProducto');
+    setupImagePreview('fondoProducto');
+    setupImagePreview('imagen1Producto');
+    setupImagePreview('imagen2Producto');
+    setupImagePreview('imagen3Producto');
+    setupImagePreview('imagen4Producto');
     
     cargarCategoriasEnSelect();
     cargarProductos();
   }
 
   // Función para mostrar preview de imágenes
-  function setupImagePreview(inputId, previewId) {
+  function setupImagePreview(inputId) {
     const input = document.getElementById(inputId);
-    const preview = document.getElementById(previewId);
-    
-    if (input && preview) {
+    if (input) {
       input.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file && file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-          };
-          reader.readAsDataURL(file);
+          const url = URL.createObjectURL(file);
+          const base = inputId.replace('Producto', '');
+          const labelId = 'label' + base.charAt(0).toUpperCase() + base.slice(1);
+          const label = document.getElementById(labelId);
+          if (label) {
+            label.style.backgroundImage = `url(${url})`;
+            label.classList.add('has-image');
+            label.dataset.url = url; // Store for cleanup
+          }
         }
       });
     }
   }
+
+  // Función para limpiar la imagen seleccionada
+  function clearImage(inputId, labelId) {
+    const input = document.getElementById(inputId);
+    const label = document.getElementById(labelId);
+    
+    if (input && label) {
+      if (label.dataset.url) {
+        URL.revokeObjectURL(label.dataset.url);
+        delete label.dataset.url;
+      }
+      input.value = '';
+      label.style.backgroundImage = '';
+      label.classList.remove('has-image');
+    }
+  }
+
+  // Función para resetear todas las vistas previas de imágenes
+  function resetImagePreviews() {
+    const imageFields = [
+      { inputId: 'portadaProducto', labelId: 'labelPortada' },
+      { inputId: 'fondoProducto', labelId: 'labelFondo' },
+      { inputId: 'imagen1Producto', labelId: 'labelImagen1' },
+      { inputId: 'imagen2Producto', labelId: 'labelImagen2' },
+      { inputId: 'imagen3Producto', labelId: 'labelImagen3' },
+      { inputId: 'imagen4Producto', labelId: 'labelImagen4' }
+    ];
+    
+    imageFields.forEach(field => {
+      clearImage(field.inputId, field.labelId);
+    });
+  }
+
+  // Hacer clearImage global para que funcione en onclick
+  window.clearImage = clearImage;
 
   // Cargar categorías en el select
   async function cargarCategoriasEnSelect() {
@@ -293,6 +362,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       alert("✅ Producto agregado correctamente.");
       document.getElementById("formProducto").reset();
+      resetImagePreviews();
       cargarProductos();
     } catch (error) {
       alert("❌ Error al agregar producto: " + error.message);
