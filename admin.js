@@ -206,6 +206,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       </div>
       <div class="section">
         <h3>Lista de Productos</h3>
+        <div style="margin-bottom: 15px;">
+          <button onclick="actualizarFondosMasivo()" style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
+            🔄 Actualizar Fondos de Productos
+          </button>
+          <span style="margin-left: 10px; color: #666; font-size: 14px;">
+            (Esto asignará automáticamente el fondo de cada categoría a sus productos)
+          </span>
+        </div>
         <table id="tablaProductos">
           <thead>
             <tr>
@@ -244,6 +252,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     cargarCategoriasEnSelect();
     cargarProductos();
   }
+
+  // Función para actualizar fondos masivamente
+  async function actualizarFondosMasivo() {
+    if (!confirm('¿Estás seguro de actualizar los fondos de todos los productos? Esto asignará el fondo de cada categoría a sus productos correspondientes.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/productos/actualizar-fondos', {
+        method: 'POST'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error desconocido');
+      }
+
+      const result = await response.json();
+      alert(`✅ ${result.message}\n\nActualizados: ${result.actualizados}\nErrores: ${result.errores}\nTotal: ${result.total}`);
+      cargarProductos(); // Recargar la tabla de productos
+    } catch (error) {
+      alert("❌ Error al actualizar fondos: " + error.message);
+    }
+  }
+
+  window.actualizarFondosMasivo = actualizarFondosMasivo;
 
   // Función para mostrar preview de imágenes
   function setupImagePreview(inputId) {

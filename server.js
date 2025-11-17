@@ -570,10 +570,13 @@ app.put('/api/categorias/:id', uploadCategoria.single('fondo'), async (req, res)
   const { id } = req.params;
   const { nombre, descripcion } = req.body;
 
-  const fondo = req.file ? req.file.filename : null;
-
-  const updateData = { nombre, descripcion };
-  if (fondo) updateData.fondo = fondo;
+  const updateData = { nombre };
+  if (descripcion) updateData.descripcion = descripcion;
+  
+  // Si se subió un nuevo archivo de fondo, agregarlo al updateData
+  if (req.file) {
+    updateData.fondo = req.file.filename;
+  }
 
   try {
     const { data, error } = await supabase
@@ -583,11 +586,13 @@ app.put('/api/categorias/:id', uploadCategoria.single('fondo'), async (req, res)
       .select();
 
     if (error) {
+      console.error('❌ Error al actualizar categoría:', error);
       return res.status(500).json({ error: error.message });
     }
 
     res.json(data);
   } catch (err) {
+    console.error('❌ Error interno:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -769,6 +774,68 @@ app.post('/api/upload', upload.fields([
       message: 'Archivos subidos correctamente'
     });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/productos/actualizar-fondos - Actualizar fondos de todos los productos
+app.post('/api/productos/actualizar-fondos', async (req, res) => {
+  try {
+    // Obtener todos los productos
+    const { data: productos, error: prodError } = await supabase
+      .from('productos')
+      .select('id, categoria');
+
+    if (prodError) {
+      return res.status(500).json({ error: prodError.message });
+    }
+
+    // Obtener todas las categorías
+    const { data: categorias, error: catError } = await supabase
+      .from('categorias')
+      .select('nombre, fondo');
+
+    if (catError) {
+      return res.status(500).json({ error: catError.message });
+    }
+
+    // Crear un mapa de categoría -> fondo
+    const categoriaFondoMap = {};
+    categorias.forEach(cat => {
+      categoriaFondoMap[cat.nombre] = cat.fondo;
+    });
+
+    // Actualizar cada producto
+    let actualizados = 0;
+    let errores = 0;
+
+    for (const producto of productos) {
+      const fondo = categoriaFondoMap[producto.categoria];
+      
+      if (fondo) {
+        const { error: updateError } = await supabase
+          .from('productos')
+          .update({ fondo })
+          .eq('id', producto.id);
+
+        if (updateError) {
+          console.error(`Error actualizando producto ${producto.id}:`, updateError);
+          errores++;
+        } else {
+          actualizados++;
+        }
+      }
+    }
+
+    res.json({ 
+      success: true, 
+      actualizados,
+      errores,
+      total: productos.length,
+      message: `Se actualizaron ${actualizados} productos correctamente` 
+    });
+  } catch (error) {
+    console.error('Error actualizando fondos:', error);
     res.status(500).json({ error: error.message });
   }
 });
