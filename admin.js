@@ -206,14 +206,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       </div>
       <div class="section">
         <h3>Lista de Productos</h3>
-        <div style="margin-bottom: 15px;">
-          <button onclick="actualizarFondosMasivo()" style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
-            🔄 Actualizar Fondos de Productos
-          </button>
-          <span style="margin-left: 10px; color: #666; font-size: 14px;">
-            (Esto asignará automáticamente el fondo de cada categoría a sus productos)
-          </span>
-        </div>
         <table id="tablaProductos">
           <thead>
             <tr>
