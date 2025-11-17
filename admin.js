@@ -110,15 +110,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       <div class="section">
         <h3>Agregar Producto</h3>
         <form id="formProducto" enctype="multipart/form-data">
-          <div style="margin-bottom: 15px;">
-            <label>Título del Producto *</label>
-            <input type="text" id="tituloProducto" placeholder="Ej: The Last of Us Part I" required style="width: 100%;">
-          </div>
-          <div style="margin-bottom: 15px;">
-            <label>Categoría *</label>
-            <select id="categoriaProducto" required style="width: 100%;">
-              <option value="">Selecciona una categoría</option>
-            </select>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+              <label>Título del Producto *</label>
+              <input type="text" id="tituloProducto" placeholder="Ej: The Last of Us Part I" required>
+            </div>
+            <div>
+              <label>Categoría *</label>
+              <select id="categoriaProducto" required>
+                <option value="">Selecciona una categoría</option>
+              </select>
+            </div>
           </div>
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px;">
             <div>
