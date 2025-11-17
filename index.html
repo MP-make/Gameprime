@@ -271,8 +271,14 @@
             const precioFinal = descuento > 0 ? (precioOriginal - (precioOriginal * descuento / 100)).toFixed(2) : precioOriginal.toFixed(2);
 
             const modalBody = document.getElementById('modal-body');
+            
+            // Establecer el fondo de la categoría en el modal-producto-container
+            const fondoStyle = product.fondo 
+                ? `style="background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('imagenes/${product.fondo}'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;"` 
+                : '';
+            
             modalBody.innerHTML = `
-                <div class="modal-producto-container">
+                <div class="modal-producto-container" ${fondoStyle}>
                     <div class="modal-izquierda">
                         <!-- Visor principal (video o imagen) -->
                         <div class="visor-principal">
@@ -381,14 +387,6 @@
                 </div>
             `;
 
-            const modalContent = document.querySelector('.modal-content');
-            if (product.fondo) {
-                modalContent.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('imagenes/${product.fondo}')`;
-                modalContent.style.backgroundSize = 'cover';
-                modalContent.style.backgroundPosition = 'center';
-                modalContent.style.backgroundRepeat = 'no-repeat';
-            }
-
             document.getElementById('productModal').style.display = 'block';
         }
 
@@ -481,3 +479,4 @@
     </script>
 </body>
 </html>
+``` 
