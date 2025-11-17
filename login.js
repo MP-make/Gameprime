@@ -31,7 +31,7 @@ async function login() {
 
         // Check if admin (simple check: if email contains 'admin' or specific)
         if (user.email === 'admin@gameprime.com') {
-            window.location.href = "admi.html";
+            window.location.href = "admin.html";
         } else {
             window.location.href = "index.html";
         }

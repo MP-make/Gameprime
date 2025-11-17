@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login y Registro - Game Prime</title>
+    <link rel="stylesheet" href="inicio.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <style>
+        .auth-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            flex: 1;
+            padding: 10px;
+            background: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .tab-button.active {
+            background: #ff007f;
+        }
+        .form-container {
+            display: none;
+        }
+        .form-container.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(45deg, #ff007f, #ff3399);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.3s;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: linear-gradient(45deg, #ff3399, #ff66b2);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="showTab('login')">Iniciar Sesión</button>
+            <button class="tab-button" onclick="showTab('register')">Registrarse</button>
+        </div>
+        <div id="login" class="form-container active">
+            <h2>Inicia Sesión 🎮</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <input type="email" id="loginEmail" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" placeholder="Contraseña" required>
+                </div>
+                <button type="submit" class="btn">Entrar</button>
+            </form>
+        </div>
+        <div id="register" class="form-container">
+            <h2>Regístrate 🎮</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <input type="email" id="registerEmail" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="registerPassword" placeholder="Contraseña" required>
+                </div>
+                <button type="submit" class="btn">Registrarse</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://ukzadyiieylaaekxblpk.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVremFkeWlpZXlsYWFla3hibHBrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzMzExOTgsImV4cCI6MjA3ODkwNzE5OH0.JRmxRCO8FNvw6Ix89Rd6CSK82o8jod2iCQhCk98LvN8';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
+            document.querySelector(`button[onclick="showTab('${tab}')"]`).classList.add('active');
+            document.getElementById(tab).classList.add('active');
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                // Autenticar con Supabase
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) {
+                    alert('Error: ' + error.message);
+                    return;
+                }
+
+                const user = data.user;
+                console.log('✅ Usuario autenticado:', user.email);
+
+                // Guardar sesión en localStorage
+                localStorage.setItem('supabase_session', JSON.stringify(data.session));
+                localStorage.setItem('user_email', user.email);
+
+                // Obtener el rol del usuario desde la base de datos
+                const response = await fetch(`/api/usuarios?correo=${encodeURIComponent(user.email)}`);
+                console.log('📡 Response status:', response.status);
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    console.log('👤 Datos del usuario:', userData);
+                    const rol = userData.rol;
+                    const nombre = userData.nombre || user.email.split('@')[0];
+                    
+                    console.log('🔑 Rol obtenido:', rol);
+                    console.log('📛 Nombre:', nombre);
+
+                    // Guardar rol y nombre en localStorage
+                    localStorage.setItem('user_rol', rol);
+                    localStorage.setItem('user_nombre', nombre);
+
+                    // Redirigir según el rol
+                    if (rol === 'admin') {
+                        console.log('🔧 Redirigiendo a admin.html');
+                        window.location.href = 'admin.html';
+                    } else {
+                        // Para 'cliente' o cualquier otro rol, redirigir a index
+                        console.log('🎮 Redirigiendo a index.html (cliente con sesión)');
+                        window.location.href = 'index.html';
+                    }
+                } else {
+                    console.error('❌ Error al obtener rol, status:', response.status);
+                    const errorText = await response.text();
+                    console.error('Error text:', errorText);
+                    alert('⚠️ Usuario autenticado pero no encontrado en la base de datos.\n\nPor favor:\n1. Ve a Supabase Dashboard\n2. Tabla "usuarios"\n3. Agrega tu email: ' + user.email + '\n4. Con rol: "admin" o "usuario"');
+                }
+            } catch (error) {
+                console.error('❌ Error en login:', error);
+                alert('Error de conexión: ' + error.message);
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+
+            // Validar formato de email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('❌ Por favor ingresa un email válido');
+                return;
+            }
+
+            // Validar longitud de contraseña
+            if (password.length < 6) {
+                alert('❌ La contraseña debe tener al menos 6 caracteres');
+                return;
+            }
+
+            console.log('📧 Intentando registrar:', email);
+
+            try {
+                // Registrar en Supabase Auth
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        emailRedirectTo: window.location.origin
+                    }
+                });
+
+                console.log('📊 Respuesta de Supabase Auth:', { data, error });
+
+                if (error) {
+                    console.error('❌ Error de Supabase Auth:', error);
+                    
+                    // Mensajes de error más amigables
+                    if (error.message.includes('invalid')) {
+                        alert('❌ Email inválido. Por favor verifica que el formato sea correcto (ejemplo: usuario@dominio.com)');
+                    } else if (error.message.includes('already registered')) {
+                        alert('⚠️ Este email ya está registrado. Intenta iniciar sesión o usa otro email.');
+                    } else {
+                        alert('❌ Error al registrar: ' + error.message);
+                    }
+                    return;
+                }
+
+                console.log('✅ Usuario registrado en Auth:', email);
+
+                // Extraer nombre del email (antes del @)
+                const nombre = email.split('@')[0];
+
+                // Agregar usuario a la tabla usuarios con rol 'cliente'
+                const response = await fetch('/api/usuarios', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        nombre: nombre, 
+                        correo: email, 
+                        rol: 'cliente'
+                    })
+                });
+
+                console.log('📡 Response status al crear usuario:', response.status);
+
+                if (response.ok) {
+                    const responseData = await response.json();
+                    console.log('✅ Usuario creado en BD:', responseData);
+                    alert('✅ Registro exitoso. Revisa tu email para confirmar tu cuenta y luego inicia sesión.');
+                    showTab('login');
+                } else {
+                    const errorData = await response.json();
+                    console.error('❌ Error al guardar en BD:', errorData);
+                    alert('⚠️ Usuario registrado en autenticación. Puedes iniciar sesión, pero hubo un problema al guardar en la base de datos:\n' + errorData.error);
+                    showTab('login');
+                }
+            } catch (error) {
+                console.error('❌ Error en registro:', error);
+                alert('❌ Error de conexión: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

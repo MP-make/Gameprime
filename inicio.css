@@ -3,14 +3,12 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #121212;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: linear-gradient(135deg, #0a141d 0%, #1a1a2a 100%);
     color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
     margin: 0;
+    padding: 0;
+    min-height: 100vh;
 }
 
 .modal {
@@ -19,11 +17,17 @@ body {
     border-radius: 10px;
     box-shadow: 0 0 15px rgba(255, 0, 255, 0.2);
     width: 300px;
+    display: none; /* Hide by default */
+}
+
+.modal.show {
+    display: block;
 }
 
 .modal h2 {
     margin-top: 0;
     text-align: center;
+    color: #ff007f;
 }
 
 .modal input {
@@ -32,18 +36,21 @@ body {
     margin: 10px 0;
     border: none;
     border-radius: 5px;
+    background-color: #333;
+    color: #fff;
 }
 
 .modal button {
     width: 100%;
     padding: 10px;
-    margin: 10px 0; /* asegúrate que tenga espacio como los inputs */
+    margin: 10px 0;
     background-color: #ff007f;
     border: none;
     border-radius: 5px;
     color: white;
     font-weight: bold;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .modal button:hover {
@@ -51,7 +58,7 @@ body {
 }
 
 .modal-content {
-    background-color: #fefefe;
+    background-color: rgba(254, 254, 254, 0.95);
     margin: 5% auto;
     padding: 20px;
     border: 1px solid #888;
@@ -59,6 +66,8 @@ body {
     max-width: 1000px;
     max-height: 80vh;
     overflow-y: auto;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 .close {
@@ -67,29 +76,27 @@ body {
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
+    transition: color 0.3s;
 }
 
 .close:hover {
-    color: black;
+    color: #ff007f;
 }
 
 nav {
-    background-color: #0a141d;
+    background-color: rgba(10, 20, 29, 0.9);
     display: flex;
     justify-content: space-between;
     align-items: center;
     height: 85px;
-    padding: 5px 10%;
+    padding: 0 10%;
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
     font-family: "Nabla", system-ui;
-    font-optical-sizing: auto;
-    font-weight: 400;
-    font-style: normal;
-    font-variation-settings:
-        "EDPT" 100,
-        "EHLT" 12;
     font-size: 24px;
 }
 
@@ -104,11 +111,13 @@ nav .nav-links li {
 
 nav .nav-links li:hover {
     transform: scale(1.1);
+    transition: transform 0.3s;
 }
 
 nav .nav-links a {
     text-decoration: none;
     color: #fff;
+    font-weight: bold;
 }
 
 .hamburger {
@@ -122,6 +131,7 @@ nav .nav-links a {
     height: 3px;
     background-color: #fff;
     margin: 3px 0;
+    transition: 0.3s;
 }
 
 .nav-links {
@@ -135,7 +145,7 @@ nav .nav-links a {
     top: 85px;
     left: 0;
     right: 0;
-    background-color: #0a141d;
+    background-color: rgba(10, 20, 29, 0.9);
     z-index: 1000;
 }
 
@@ -160,4 +170,65 @@ nav .nav-links a {
     .nav-links.active {
         display: flex; 
     }
+}
+
+#productos-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 120px 10% 40px; /* Padding top to account for fixed nav */
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.producto {
+    background: rgba(30, 30, 30, 0.8);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.producto:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+}
+
+.producto img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.producto h3 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    color: #ff007f;
+}
+
+.producto p {
+    margin: 5px 0;
+    color: #ccc;
+}
+
+.producto button {
+    background: linear-gradient(45deg, #ff007f, #ff3399);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    margin: 5px;
+    transition: background 0.3s, transform 0.3s;
+    font-weight: bold;
+}
+
+.producto button:hover {
+    background: linear-gradient(45deg, #ff3399, #ff66b2);
+    transform: scale(1.05);
 }

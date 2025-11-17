@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel de Administración</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins :wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="admin.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="admin.js"></script>
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">
+      <a href="index.html">
+        <img src="imagenes/logo.png" alt="Logo" class="logo-img"/>
+      </a>
+    </div>
+    <div class="titulo-header">
+      <h1>Panel de Administración</h1>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <aside class="sidebar">
+      <ul class="menu-list">
+        <li><a href="#" id="menuProductos" data-section="productos">Gestión de Productos</a></li>
+        <li><a href="#" id="menuCategorias" data-section="categorias">Gestión de Categorías</a></li>
+        <li><a href="#" id="menuUsuarios" data-section="usuarios">Gestión de Usuarios</a></li>
+        <li><a href="#" id="menuProveedores" data-section="proveedores">Gestión de Proveedores</a></li>
+        <li><a href="#" id="menuReportes" data-section="reportes">Gestión de Reportes</a></li>
+        <li><a href="#" id="menuMensajes" data-section="mensajes">Gestión de Mensajes</a></li>
+        <li><button onclick="logout()" class="logout-btn">Cerrar Sesión</button></li>
+      </ul>
+    </aside>
+    <main class="main-content" id="mainContent">
+      <!-- Content will be loaded here -->
+    </main>
+  </div>
+
+</body>
+</html>

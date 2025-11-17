@@ -12,9 +12,8 @@
         <li><a href="indexinicio.html">Inicio</a></li>
         <li><a href="#contacto">Contacto</a></li>
         <li><a href="carrito.html">Carrito</a></li>
-        <li><a href="login.html">Login</a></li>
-        <li><a href="registro.html">Registro</a></li>
-        <li><a href="admi.html">Admin</a></li>
+        <li><a href="login-registro.html">Iniciar Sesión</a></li>
+        <li><a href="admin.html">Admin</a></li>
     </ul>
     <div class="hamburger" onclick="toggleMenu()">
         <div class="line"></div>
@@ -22,13 +21,6 @@
         <div class="line"></div>
     </div>
 </nav>
-
-<div class="modal" id="loginModal">
-    <h2>Inicia Sesión 🎮</h2>
-    <input type="email" id="username" placeholder="Email">
-    <input type="password" id="password" placeholder="Contraseña">
-    <button onclick="login()">Entrar</button>
-</div>
 
 <div id="productos-container"></div>
 
@@ -43,6 +35,27 @@
 </div>
 
 <script>
+    const token = localStorage.getItem('token');
+    const rol = localStorage.getItem('rol');
+
+    if (!token) {
+        // Hide cart link
+        const cartLi = document.querySelector('nav ul li a[href="carrito.html"]').parentElement;
+        if (cartLi) cartLi.style.display = 'none';
+    } else {
+        // Add logout link
+        const navUl = document.querySelector('nav ul');
+        const logoutLi = document.createElement('li');
+        logoutLi.innerHTML = '<a href="#" onclick="logout()">Cerrar Sesión</a>';
+        navUl.appendChild(logoutLi);
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('rol');
+        location.reload();
+    }
+
     async function loadProducts() {
         try {
             const response = await fetch('/api/productos');
@@ -64,6 +77,17 @@
                     <button onclick="addToCart(${product.id})">Agregar al Carrito</button>
                 `;
                 container.appendChild(productDiv);
+
+                // Disable buttons if not logged in
+                if (!token) {
+                    productDiv.querySelectorAll('button').forEach(btn => {
+                        if (btn.textContent.includes('Agregar al Carrito')) {
+                            btn.disabled = true;
+                            btn.textContent = 'Inicia Sesión para Comprar';
+                            btn.onclick = () => location.href = 'login-registro.html';
+                        }
+                    });
+                }
             });
         } catch (error) {
             console.error(error);
@@ -128,6 +152,16 @@
                     <button onclick="addToCart(${product.id})">Comprar ${product.titulo}</button>
                 </aside>
             `;
+
+            // Disable buy button if not logged in
+            if (!token) {
+                const buyBtn = modalBody.querySelector('button[onclick*="addToCart"]');
+                if (buyBtn) {
+                    buyBtn.disabled = true;
+                    buyBtn.textContent = 'Inicia Sesión para Comprar';
+                    buyBtn.onclick = () => location.href = 'login-registro.html';
+                }
+            }
 
             document.getElementById('productModal').style.display = 'block';
         } catch (error) {
