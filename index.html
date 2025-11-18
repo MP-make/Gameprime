@@ -477,6 +477,39 @@
         loadCategories();
         loadProducts();
     </script>
+    <!-- Botón para abrir chat -->
+    <button id="openChatBtn" class="chat-btn">
+      <img src="imagenes/import/Ai-Bot.gif" alt="Asistente Virtual">
+    </button>
+
+    <!-- Modal del chat -->
+    <div id="chatModal" class="chat-modal">
+      <div class="chat-header">
+        <h3>🤖 Asistente GamePrime</h3>
+        <button id="closeChatBtn" class="chat-close-btn">&times;</button>
+      </div>
+      
+      <div id="chatMessages" class="chat-messages">
+        <div class="message bot">
+          ¡Hola! Soy el asistente virtual de GamePrime. ¿En qué puedo ayudarte hoy? 🎮
+        </div>
+      </div>
+      
+      <div class="chat-input-container">
+        <input 
+          type="text" 
+          id="chatInput" 
+          placeholder="Escribe tu pregunta..."
+          autocomplete="off"
+        >
+        <button id="sendChatBtn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Vincular CSS y JS del chat -->
+    <link rel="stylesheet" href="chat.css">
+    <script src="chat.js"></script>
 </body>
 </html>
-``` 

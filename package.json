@@ -19,6 +19,7 @@
   "homepage": "https://github.com/MP-make/Gameprime#readme",
   "dependencies": {
     "@supabase/supabase-js": "^2.81.1",
+    "axios": "^1.13.2",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "multer": "^2.0.2"

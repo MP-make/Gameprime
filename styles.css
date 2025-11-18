@@ -1097,28 +1097,81 @@ aside img {
     font-weight: 600;
 }
 
+
+.btn-comprar-modal span{
+    display: block;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    font-size: 14 px;
+    font-weight: 600;
+    line-height: 24px;
+    color: var(--text-color);
+    opacity: var(--text-o);
+    transform: translateX(var(--text-x))translateZ(0);
+}
+
+.btn-comprar-modal .shirt,
+.btn-comprar-modal .cart {
+    pointer-events: none;
+    position: absolute;
+    left: 50%;   
+    opacity: 0;
+}
+
+.btn-comprar-modal::before{
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: 5px;
+    transition: background-color 0.25s;
+    background: var(--background,var(--background-default));
+    transform: scaleX(var(--background-scale))translateZ(0);
+}
+
 .btn-comprar-modal {
     background: linear-gradient(135deg, #ff007f, #ff3399);
     color: white;
     border: none;
-    padding: 15px 25px;
-    border-radius: 10px;
+    padding: 12px 20px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: 600;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    margin-top: 10px;
-    flex-shrink: 0;
+    gap: 8px;
 }
 
-.btn-comprar-modal:hover {
-    background: linear-gradient(135deg, #ff3399, #ff66b2);
-    transform: scale(1.05);
-    box-shadow: 0 10px 25px rgba(255, 0, 127, 0.5);
+.btn-comprar-modal.clicked .shirt {
+    opacity: 1;
+    animation: shirt-animation 1.5s forwards;
+}
+
+/* El texto se oculta durante la animación */
+.btn-comprar-modal.clicked span {
+    opacity: 0;
+}
+
+/* Animación de la camisa (vuela hacia arriba y desaparece) */
+@keyframes shirt-animation {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -200%) scale(0); opacity: 0; }
+}
+
+/* Animación del carrito (crece y vuelve a tamaño normal) */
+@keyframes cart-animation {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.2); }
+  100% { transform: translate(-50%, -50%) scale(1); }
 }
 
 /* ===== ESTILOS MEJORADOS PARA TARJETAS DE PRODUCTOS ===== */

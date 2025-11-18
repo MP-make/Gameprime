@@ -11,11 +11,10 @@
             max-width: 400px;
             margin: 100px auto;
             padding: 20px;
-            background: rgba(30, 30, 30, 0.8);
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            background: transparent; /* Fondo transparente para ver el borde */
+            position: relative;
+            overflow: hidden; /* Para contener los bordes */
         }
         .tab-buttons {
             display: flex;
@@ -23,6 +22,7 @@
         }
         .tab-button {
             flex: 1;
+            padding: 10px;
             padding: 10px;
             background: #333;
             color: #fff;
@@ -64,6 +64,48 @@
         .btn:hover {
             background: linear-gradient(45deg, #ff3399, #ff66b2);
             transform: scale(1.05);
+        }
+
+        /* Esta es la capa de la sombra/brillo que gira */
+        .auth-container::before {
+          content: "";
+          position: absolute;
+          top: -2px;
+          left: -2px;
+          right: -2px;
+          bottom: -2px;
+          background: linear-gradient(45deg, #ff007f, #ff3399, #ff66b2, #ff007f);
+          border-radius: 22px;
+          z-index: -1;
+          animation: rotating 4s linear infinite;
+        }
+
+        /* Esta es la nueva capa de fondo (reemplaza la anterior) */
+        .auth-container::after {
+          content: "";
+          position: absolute;
+          inset: 4px; /* Separación del borde */
+          background: #2d2d39; /* Color de fondo oscuro de la imagen */
+          border-radius: 15px;
+          border: 8px solid #25252b;
+          z-index: 1; /* Para que esté sobre el brillo */
+        }
+
+        /* --- 3. AÑADE EL KEYFRAME PARA LA ANIMACIÓN --- */
+        @keyframes rotating {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        /* --- 4. AJUSTA EL CONTENIDO DEL FORMULARIO --- */
+        /* Debemos poner el formulario por encima de la capa ::after */
+        .tab-buttons, .form-container {
+            position: relative;
+            z-index: 2;
         }
     </style>
 </head>

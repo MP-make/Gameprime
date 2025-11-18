@@ -2,6 +2,7 @@ const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
 const multer = require('multer');
 const path = require('path');
+const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
@@ -777,6 +778,105 @@ app.post('/api/upload', upload.fields([
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @route POST /api/chat
+ * @desc Chat con IA local (Ollama)
+ */
+app.post("/api/chat", async (req, res) => {
+  const { pregunta } = req.body;
+
+  // PASO 1: Validar pregunta
+  if (!pregunta || typeof pregunta !== 'string' || pregunta.trim().length === 0) {
+    return res.status(400).json({ error: 'Pregunta requerida' });
+  }
+
+  // PASO 2: Validar longitud (evitar spam)
+  if (pregunta.length > 500) {
+    return res.status(400).json({ 
+      error: 'Pregunta demasiado larga (máximo 500 caracteres)' 
+    });
+  }
+
+  // PASO 3: Respuesta rápida para saludos
+  const preguntaLower = pregunta.trim().toLowerCase();
+  if (['hola', 'hi', 'hello', 'buenos días', 'buenas tardes'].includes(preguntaLower)) {
+    return res.json({ 
+      respuesta: "¡Hola! Bienvenido al chat de asistencia de GamePrime. ¿En qué puedo ayudarte hoy con nuestros videojuegos?" 
+    });
+  }
+
+  try {
+    // PASO 4: Buscar contexto en la base de datos
+    const palabrasClave = pregunta.trim().toLowerCase().split(/\s+/);
+    let contexto = '';
+    
+    for (const palabra of palabrasClave) {
+      if (palabra.length > 2) { // Ignorar palabras muy cortas (el, la, de, etc.)
+        const { data: results, error } = await supabase
+          .from('faq_hotel')
+          .select('respuesta')
+          .ilike('pregunta', `%${palabra}%`)
+          .limit(3);
+        
+        if (!error && results) {
+          for (const row of results) {
+            if (!contexto.includes(row.respuesta)) {
+              contexto += row.respuesta + '\n';
+            }
+          }
+        }
+      }
+    }
+
+    // PASO 5: Crear el "Súper-Prompt" con contexto
+    const superPrompt = `Eres el asistente virtual de GamePrime, la tienda líder en videojuegos digitales.
+
+Información de GamePrime:
+- Ubicación: Tienda online especializada en videojuegos
+- Servicios: Venta de juegos digitales, descuentos exclusivos, soporte técnico
+- Categorías: Acción, Aventura, RPG, Estrategia, Deportes, Indie
+- Contacto: soporte@gameprime.com | WhatsApp: +51 999 888 777
+
+Contexto relevante de la base de conocimientos:
+${contexto || 'No hay información específica disponible.'}
+
+Pregunta del usuario: "${pregunta.trim()}"
+
+Instrucciones:
+- Mantén tus respuestas BREVES (máximo 3-4 frases)
+- Sé amigable, profesional y entusiasta sobre videojuegos
+- Si no sabes algo, sugiere contactar soporte@gameprime.com
+- Nunca inventes información que no tengas
+- Responde en español de forma natural y apasionada por los juegos`;
+
+    // PASO 6: Enviar a Ollama
+    const ollamaResponse = await axios.post('http://localhost:11434/api/chat', {
+      model: 'llama3',
+      messages: [{ role: 'user', content: superPrompt }],
+      stream: false,
+      options: {
+        temperature: 0.7, // Equilibrio entre precisión y creatividad
+        num_predict: 200  // Máximo de tokens en la respuesta
+      }
+    });
+
+    // PASO 7: Extraer y enviar respuesta
+    const respuesta = ollamaResponse.data?.message?.content?.trim() || 
+                      'Lo siento, no pude generar una respuesta.';
+
+    res.json({ respuesta });
+
+  } catch (error) {
+    console.error('Error en chat con Ollama:', error);
+
+    // PASO 8: Fallback en caso de error
+    const respuestaFallback = "Lo siento, estoy teniendo dificultades técnicas. " +
+                               "Por favor, contacta a soporte@gameprime.com o envía un WhatsApp al +51 999 888 777";
+    
+    res.json({ respuesta: respuestaFallback });
   }
 });
 
